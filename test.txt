@@ -1,4 +1,6 @@
 fn main() {
-    let v: Vec<i32> = Vec::with_capacity(10000);
-    println!("Hello World, {:?}", v);
+    let mut buffer = String::new();
+    std::io::stdin().read_line(&mut buffer).unwrap();
+
+    println!("Hello, {}", buffer);
 }
