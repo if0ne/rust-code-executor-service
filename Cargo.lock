@@ -884,6 +884,7 @@ dependencies = [
 name = "rust-code-executor-service"
 version = "0.1.0"
 dependencies = [
+ "libc",
  "rocket",
  "tokio",
  "winapi",
