@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 rocket = "0.5.0-rc.1"
-tokio = { version = "1.16.1", features = ["io-std"] }
+tokio = { version = "1.16.1", features = ["io-std", "process"] }
+winapi = { version = "0.3.9", features = ["processthreadsapi", "minwindef", "winnt", "psapi"] }

@@ -1,0 +1,4 @@
+fn main() {
+    let v: Vec<i32> = Vec::with_capacity(10000);
+    println!("Hello World, {:?}", v);
+}
