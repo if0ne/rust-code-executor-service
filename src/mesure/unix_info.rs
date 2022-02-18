@@ -1,4 +1,6 @@
 use crate::mesure::{ProcessInfo, ProcessInformer};
+
+use std::error::Error;
 use std::time::Duration;
 
 fn timeval_to_duration(val: libc::timeval) -> Duration {
@@ -14,10 +16,10 @@ impl ProcessInformer for std::process::Child {
         let options = 0;
         let mut info = std::mem::MaybeUninit::zeroed();
 
-        let res = unsafe { libc::wait4(pid, &mut status, options, info) };
+        let res = unsafe { libc::wait4(pid, &mut status, options, info.as_mut_ptr()) };
 
         if res < 0 {
-            Err(std::io::Error::last_os_error())
+            Err(Box::new(std::io::Error::last_os_error()))
         } else {
             let info = unsafe { info.assume_init() };
 

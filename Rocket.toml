@@ -1,0 +1,5 @@
+[debug]
+port = 8001
+
+[release]
+port = 9999

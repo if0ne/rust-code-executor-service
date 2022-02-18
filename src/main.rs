@@ -4,9 +4,10 @@ mod mesure;
 extern crate rocket;
 
 use crate::mesure::ProcessInformer;
-use rocket::http::Status;
+use rocket::http::{Method, Status};
 use rocket::response::status;
 use std::io::Write;
+use rocket_cors::{AllowedOrigins, CorsOptions};
 
 #[get("/")]
 async fn index() -> status::Custom<String> {
@@ -38,7 +39,17 @@ async fn index() -> status::Custom<String> {
 
 #[rocket::main]
 async fn main() {
+    let cors = CorsOptions::default()
+        .allowed_origins(AllowedOrigins::all())
+        .allowed_methods(
+            vec![Method::Get, Method::Post]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+        )
+        .allow_credentials(true);
     rocket::build()
+        .attach(cors.to_cors().unwrap())
         .mount("/", routes![index])
         .launch()
         .await
