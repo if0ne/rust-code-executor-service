@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rocket = "0.5.0-rc.1"
+rocket = { version = "0.5.0-rc.1", features = ["json", "serde_json"] }
 rocket_cors = "0.6.0-alpha1"
 tokio = { version = "1.16.1", features = ["io-std", "process"] }
+serde = "1.0.136"
+serde_json = "1.0.79"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.9", features = ["processthreadsapi", "minwindef", "winnt", "psapi"] }

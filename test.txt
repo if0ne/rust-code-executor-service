@@ -1,6 +1,0 @@
-fn main() {
-    let mut buffer = String::new();
-    std::io::stdin().read_line(&mut buffer).unwrap();
-
-    println!("Hello, {}", buffer);
-}
