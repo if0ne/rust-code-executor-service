@@ -21,7 +21,7 @@ struct Solution {
 
 #[get("/")]
 async fn index() -> status::Custom<String> {
-    status::Custom(Status::Ok, String::from("All is ok"))
+    status::Custom(Status::Ok, String::from("All is ok or not"))
 }
 
 #[post("/compile", format = "json", data = "<solution>")]
