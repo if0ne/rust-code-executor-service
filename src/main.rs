@@ -34,8 +34,8 @@ async fn compile(solution: Json<Solution>) -> status::Custom<String> {
     let mut process = std::process::Command::new("rustc")
         .arg("-O")
         .arg("test.txt")
-        //.arg("--out-dir")
-        //.arg("target/debug/")
+        .arg("--out-dir")
+        .arg("target/debug/")
         .spawn()
         .unwrap();
     let compile_info = process.get_process_info();

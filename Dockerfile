@@ -5,9 +5,10 @@ FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM ekidd/rust-musl-builder:latest AS Builder
+FROM rust:1.58.1-alpine AS Builder
 
-RUN sudo apt-get update
+RUN apk upgrade
+RUN apk add musl-dev
 
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo install cargo-chef --locked
@@ -25,6 +26,12 @@ FROM alpine AS Runner
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /home/rust/src/target/x86_64-unknown-linux-musl/release/rust-code-executor-service /usr/local/bin
+COPY --from=builder /target/x86_64-unknown-linux-musl/release/rust-code-executor-service /bin
+
+RUN apk add rust
+RUN apk add openjdk17
+RUN apk add python3
+RUN apk add nodejsA
+
 EXPOSE 8000
 CMD rust-code-executor-service
