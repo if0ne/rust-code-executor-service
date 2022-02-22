@@ -26,6 +26,15 @@ async fn index() -> status::Custom<String> {
 
 #[post("/compile", format = "json", data = "<solution>")]
 async fn compile(solution: Json<Solution>) -> status::Custom<String> {
+    let executable_file_path;
+
+    if cfg!(target_os = "windows") {
+        executable_file_path = "./target/test.exe";
+    } else {
+        executable_file_path = "./target/test";
+        //для java ./target/AppRunner (соответсвует названию класса)
+    }
+
     {
         let mut solution_file = std::fs::File::create("test.txt").unwrap();
         solution_file.write_all(solution.code.as_bytes()).unwrap();
@@ -33,16 +42,19 @@ async fn compile(solution: Json<Solution>) -> status::Custom<String> {
 
     let mut process = std::process::Command::new("rustc")
         .arg("-O")
+        //.arg("-d") для java
+        //.arg("target")
+        //.arg("test.java")
         .arg("test.txt")
         .arg("--out-dir")
-        .arg("target/debug/")
+        .arg("target")
         .spawn()
         .unwrap();
     let compile_info = process.get_process_info();
 
     //Вывод результата происходит в файл
     let outputs = std::fs::File::create("out.txt").unwrap();
-    let mut process = std::process::Command::new("test.exe")
+    let mut process = std::process::Command::new(executable_file_path)
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::from(outputs))
         .spawn()
