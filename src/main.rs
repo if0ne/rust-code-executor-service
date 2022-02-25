@@ -2,7 +2,10 @@ mod mesure;
 
 #[macro_use]
 extern crate rocket;
+extern crate dotenv;
 
+use dotenv::dotenv;
+use std::env;
 use crate::mesure::ProcessInformer;
 
 use rocket::http::{Method, Status};
@@ -71,6 +74,10 @@ async fn compile(solution: Json<Solution>) -> status::Custom<String> {
 
 #[rocket::main]
 async fn main() {
+    dotenv().ok();
+    let port = env::var("RUST_SERVICE_PORT").unwrap().parse::<u16>().unwrap();
+    let host_address = env::var("RUST_SERVICE_HOST").unwrap();
+
     let cors = CorsOptions::default()
         .allowed_origins(AllowedOrigins::all())
         .allowed_methods(
@@ -82,8 +89,8 @@ async fn main() {
         .allow_credentials(true);
 
     let config = Config::figment()
-        .merge(("address", "0.0.0.0"))
-        .merge(("port", 8000));
+        .merge(("address", host_address))
+        .merge(("port", port));
 
     rocket::custom(config)
         .attach(cors.to_cors().unwrap())
