@@ -1,12 +1,13 @@
+#![warn(clippy::all)]
+#![warn(rust_2018_idioms)]
 mod mesure;
 
 #[macro_use]
 extern crate rocket;
-extern crate dotenv;
 
+use crate::mesure::ProcessInformer;
 use dotenv::dotenv;
 use std::env;
-use crate::mesure::ProcessInformer;
 
 use rocket::http::{Method, Status};
 use rocket::response::status;
@@ -29,14 +30,12 @@ async fn index() -> status::Custom<String> {
 
 #[post("/compile", format = "json", data = "<solution>")]
 async fn compile(solution: Json<Solution>) -> status::Custom<String> {
-    let executable_file_path;
-
-    if cfg!(target_os = "windows") {
-        executable_file_path = "./target/test.exe";
+    let executable_file_path = if cfg!(target_os = "windows") {
+        "./target/test.exe"
     } else {
-        executable_file_path = "./target/test";
+        "./target/test"
         //для java ./target/AppRunner (соответсвует названию класса)
-    }
+    };
 
     {
         let mut solution_file = std::fs::File::create("test.txt").unwrap();
@@ -55,27 +54,36 @@ async fn compile(solution: Json<Solution>) -> status::Custom<String> {
         .unwrap();
     let compile_info = process.get_process_info();
 
-    //Вывод результата происходит в файл
-    let outputs = std::fs::File::create("out.txt").unwrap();
     let mut process = std::process::Command::new(executable_file_path)
         .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::from(outputs))
+        .stdout(std::process::Stdio::piped())
         .spawn()
         .unwrap();
     //Ввод данных в процесс
     process.stdin.as_mut().unwrap().write_all(b"Pavel").unwrap();
     let program_info = process.get_process_info();
+    let output = process.wait_with_output().unwrap();
+
+    std::fs::remove_file("test.txt").unwrap();
 
     status::Custom(
         Status::Ok,
-        format!("{:?}\n{:?}", compile_info, program_info),
+        format!(
+            "{:?}\n{:?}\n{}",
+            compile_info,
+            program_info,
+            String::from_utf8_lossy(&output.stdout)
+        ),
     )
 }
 
 #[rocket::main]
 async fn main() {
     dotenv().ok();
-    let port = env::var("RUST_SERVICE_PORT").unwrap().parse::<u16>().unwrap();
+    let port = env::var("RUST_SERVICE_PORT")
+        .unwrap()
+        .parse::<u16>()
+        .unwrap();
     let host_address = env::var("RUST_SERVICE_HOST").unwrap();
 
     let cors = CorsOptions::default()

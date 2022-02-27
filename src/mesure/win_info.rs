@@ -6,12 +6,9 @@ use std::mem;
 use std::os::windows::io::AsRawHandle;
 use std::time::Duration;
 
-use winapi::um::psapi::PROCESS_MEMORY_COUNTERS;
-use winapi::um::winnt::HANDLE;
-
 impl ProcessInformer for std::process::Child {
     fn get_process_info(&mut self) -> Result<ProcessInfo, Box<dyn Error>> {
-        let handle = self.as_raw_handle();
+        let instance = self.as_raw_handle() as isize;
         let _status = self.wait()?;
 
         let (user_time, kernel_time) = unsafe {
@@ -19,15 +16,15 @@ impl ProcessInformer for std::process::Child {
             let mut etime = mem::zeroed();
             let mut kernel_time = mem::zeroed();
             let mut user_time = mem::zeroed();
-            let res = winapi::um::processthreadsapi::GetProcessTimes(
-                handle,
+            let res = windows::Win32::System::Threading::GetProcessTimes(
+                windows::Win32::Foundation::HANDLE(instance),
                 &mut ctime,
                 &mut etime,
                 &mut kernel_time,
                 &mut user_time,
             );
 
-            if res != 0 {
+            if res.as_bool() {
                 //Умножение на 100 для перевода в наносекунды, т.к. функция возвращает время измеряемой в 100 наносекундах
                 let user = (((user_time.dwHighDateTime as i64) << 32)
                     + user_time.dwLowDateTime as i64)
@@ -43,12 +40,13 @@ impl ProcessInformer for std::process::Child {
 
         let total_bytes = unsafe {
             let mut pmc = mem::zeroed();
-            let res = winapi::um::psapi::GetProcessMemoryInfo(
-                handle as HANDLE,
+            let res = windows::Win32::System::ProcessStatus::K32GetProcessMemoryInfo(
+                windows::Win32::Foundation::HANDLE(instance),
                 &mut pmc,
-                std::mem::size_of::<PROCESS_MEMORY_COUNTERS>() as u32,
+                std::mem::size_of::<windows::Win32::System::ProcessStatus::PROCESS_MEMORY_COUNTERS>(
+                ) as u32,
             );
-            if res != 0 {
+            if res.as_bool() {
                 pmc.PeakWorkingSetSize as u64
             } else {
                 0

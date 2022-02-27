@@ -6,14 +6,14 @@ edition = "2021"
 [dependencies]
 cfg-if = "0.1.10"
 dotenv = "0.15.0"
-rocket = { version = "0.5.0-rc.1", features = ["json", "serde_json"] }
+rocket = { version = "0.5.0-rc.1", features = ["json"] }
 rocket_cors = "0.6.0-alpha1"
 tokio = { version = "1.16.1", features = ["io-std", "process"] }
 serde = "1.0.136"
 serde_json = "1.0.79"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3.9", features = ["processthreadsapi", "minwindef", "winnt", "psapi"] }
+windows = { version = "0.33.0", features = ["Win32_System_Threading", "Win32_Foundation", "Win32_System_ProcessStatus", "Win32_System_LibraryLoader"] }
 
 [target.'cfg(not(windows))'.dependencies]
 libc = "0.2.117"
