@@ -6,12 +6,13 @@ use std::mem;
 use std::os::windows::io::AsRawHandle;
 use std::time::Duration;
 
+#[async_trait::async_trait]
 impl ProcessInformer for std::process::Child {
-    fn get_process_info(&mut self) -> Result<ProcessInfo, Box<dyn Error>> {
+    async fn get_process_info(&mut self) -> Result<ProcessInfo, Box<dyn Error>> {
         let instance = self.as_raw_handle() as isize;
         let _status = self.wait()?;
 
-        let (user_time, kernel_time) = unsafe {
+        let (user_time, _) = unsafe {
             let mut ctime = mem::zeroed();
             let mut etime = mem::zeroed();
             let mut kernel_time = mem::zeroed();
@@ -54,8 +55,39 @@ impl ProcessInformer for std::process::Child {
         };
 
         Ok(ProcessInfo {
-            user_time: Duration::from_nanos(user_time),
-            kernel_time: Duration::from_nanos(kernel_time),
+            execute_time: Duration::from_nanos(user_time),
+            total_memory: total_bytes,
+        })
+    }
+}
+
+#[async_trait::async_trait]
+impl ProcessInformer for tokio::process::Child {
+    async fn get_process_info(&mut self) -> Result<ProcessInfo, Box<dyn Error>> {
+        let instance = self.raw_handle().unwrap() as isize;
+        let start = std::time::Instant::now();
+        let status = self.wait();
+
+        let total_bytes = unsafe {
+            let mut pmc = mem::zeroed();
+            let res = windows::Win32::System::ProcessStatus::K32GetProcessMemoryInfo(
+                windows::Win32::Foundation::HANDLE(instance),
+                &mut pmc,
+                std::mem::size_of::<windows::Win32::System::ProcessStatus::PROCESS_MEMORY_COUNTERS>(
+                ) as u32,
+            );
+            if res.as_bool() {
+                pmc.PeakWorkingSetSize as u64
+            } else {
+                0
+            }
+        };
+
+        status.await?;
+        let delta = start.elapsed();
+
+        Ok(ProcessInfo {
+            execute_time: delta,
             total_memory: total_bytes,
         })
     }

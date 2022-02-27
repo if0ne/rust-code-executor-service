@@ -2,13 +2,13 @@ use std::time::Duration;
 
 #[derive(Debug)]
 pub struct ProcessInfo {
-    pub user_time: Duration,
-    pub kernel_time: Duration,
+    pub execute_time: Duration,
     pub total_memory: u64,
 }
 
+#[async_trait::async_trait]
 pub trait ProcessInformer {
-    fn get_process_info(&mut self) -> Result<ProcessInfo, Box<dyn std::error::Error>>;
+    async fn get_process_info(&mut self) -> Result<ProcessInfo, Box<dyn std::error::Error>>;
 }
 
 #[cfg(windows)]

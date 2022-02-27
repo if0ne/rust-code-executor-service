@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-trait = "0.1.52"
 cfg-if = "0.1.10"
 dotenv = "0.15.0"
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
