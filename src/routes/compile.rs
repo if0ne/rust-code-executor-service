@@ -80,14 +80,8 @@ pub async fn compile(solution: Json<Solution>) -> status::Custom<String> {
     let result = handle_solution(&solution).await;
 
     if let Ok(res) = result {
-        status::Custom(
-            Status::Ok,
-            serde_json::to_string(&res).unwrap(),
-        )
+        status::Custom(Status::Ok, serde_json::to_string(&res).unwrap())
     } else {
-        status::Custom(
-            Status::BadRequest,
-            String::new(),
-        )
+        status::Custom(Status::BadRequest, String::new())
     }
 }

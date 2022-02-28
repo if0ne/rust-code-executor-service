@@ -1,5 +1,5 @@
-use std::marker::PhantomData;
 use crate::routes::compile::{ExecutedTest, Solution};
+use std::marker::PhantomData;
 
 pub mod rust_exec;
 
@@ -25,7 +25,7 @@ impl Executor<Defined> {
 
         Ok(Executor {
             inner: self.inner,
-            state: PhantomData::<Compiled>
+            state: PhantomData::<Compiled>,
         })
     }
 }

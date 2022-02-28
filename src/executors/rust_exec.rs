@@ -33,16 +33,22 @@ impl ExecutorImpl for RustExecutor {
             .arg("-O")
             .arg(format!("{}/{}", folder, "code.txt"))
             .arg("--out-dir")
-            .arg(format!("{}/{}", "target/debug/",folder))
+            .arg(format!("{}", folder))
             .spawn()
+            .unwrap()
+            .wait()
             .unwrap();
 
-        self.path = format!("target/debug/{}", folder);
+        self.path = folder;
         Ok(())
     }
 
     async fn execute(&self, test: &str) -> ExecutedTest {
-        let mut process = std::process::Command::new(format!("{}/{}", self.path, "/code.exe"))
+        let mut process = std::process::Command::new("cmd")
+            .current_dir(&self.path)
+            .arg("/C")
+            .arg( "code.exe")
+            .current_dir(&self.path)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .spawn()
@@ -66,7 +72,7 @@ impl ExecutorImpl for RustExecutor {
     }
 
     async fn clean(&self) {
-        std::fs::remove_dir(&self.path).unwrap();
+        std::fs::remove_dir_all(&self.path).unwrap();
     }
 }
 
