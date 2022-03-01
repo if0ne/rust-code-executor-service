@@ -33,15 +33,21 @@ trait ExecutorImpl: Send + Sync {
 
         let compiler_args = self.get_compiler_args(solution);
 
-        let _ = std::process::Command::new("cmd")
+        let status = std::process::Command::new("cmd")
             .arg("/C")
             .args(compiler_args)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
             .spawn()
             .unwrap()
             .wait()
             .map_err(|_| ())?;
 
-        Ok(())
+        if !status.success() {
+            Err(())
+        } else {
+            Ok(())
+        }
     }
 
     async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
@@ -54,6 +60,7 @@ trait ExecutorImpl: Send + Sync {
             .args(execute_args)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
             .spawn()
             .unwrap();
 
