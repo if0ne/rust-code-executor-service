@@ -1,0 +1,1 @@
+fn main() { let big_str = "а"; println!(big_str); }

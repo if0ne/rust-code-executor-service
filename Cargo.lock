@@ -951,8 +951,10 @@ dependencies = [
 name = "rust-code-executor-service"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "cfg-if 0.1.10",
  "dotenv",
+ "futures",
  "libc",
  "rocket",
  "rocket_cors",
