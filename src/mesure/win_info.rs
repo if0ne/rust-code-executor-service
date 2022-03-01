@@ -4,7 +4,6 @@ use std::error::Error;
 use std::mem;
 
 use std::os::windows::io::AsRawHandle;
-use std::time::Duration;
 
 #[async_trait::async_trait]
 impl ProcessInformer for std::process::Child {

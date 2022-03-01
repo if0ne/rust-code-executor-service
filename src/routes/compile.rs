@@ -23,6 +23,7 @@ impl Solution {
         self.uuid.clone()
     }
 
+    //TODO: Настройка хешера
     pub fn get_hash(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
         self.source.hash(&mut hasher);
@@ -31,6 +32,10 @@ impl Solution {
 
     pub fn get_src(&self) -> &str {
         &self.source
+    }
+
+    pub fn get_folder_name(&self) -> String {
+        format!("{}_{}", self.get_uuid(), self.get_hash())
     }
 }
 
@@ -41,7 +46,7 @@ pub enum ExecuteStats {
 
 #[derive(Serialize)]
 pub struct ExecutedTest {
-    pub(crate) time: u64,
+    pub(crate) time: u128,
     pub(crate) memory: u64,
     pub(crate) result: String,
     pub(crate) status: ExecuteStats,
@@ -52,10 +57,7 @@ unsafe impl Sync for ExecutedTest {}
 
 fn define_lang(solution: &Solution) -> Result<Executor<Defined>, ()> {
     match solution.lang.as_str() {
-        "rust" => Ok(RustExecutor {
-            path: "".to_string(),
-        }
-        .into()),
+        "rust" => Ok(RustExecutor.into()),
         _ => Err(()),
     }
 }
@@ -64,13 +66,15 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
     let executor = define_lang(solution)?;
     let executor = executor.compile(solution).await?;
 
-    let mut results = vec![];
+    let results = solution
+        .tests
+        .iter()
+        .map(|test| executor.execute(solution, test))
+        .collect::<Vec<_>>();
 
-    for item in solution.tests.iter() {
-        results.push(executor.execute(item).await);
-    }
+    let results = futures::future::join_all(results).await;
 
-    executor.clean().await;
+    executor.clean(solution).await;
 
     Ok(results)
 }
