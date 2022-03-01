@@ -2,11 +2,8 @@ use crate::routes::compile::{ExecuteStats, ExecutedTest, Solution};
 use crate::ProcessInformer;
 use std::io::Write;
 use std::marker::PhantomData;
-use std::path::Path;
 
 pub mod rust_exec;
-
-pub const COMPILE_FILE_NAME: &str = "code";
 
 #[cfg(windows)]
 pub const CONSOLE_CALL: &str = "cmd";
@@ -18,31 +15,42 @@ pub const CONSOLE_ARG: &str = "/C";
 #[cfg(not(windows))]
 pub const CONSOLE_ARG: &str = "-c";
 
+pub enum DefinedLanguage {
+    Compiled(Executor<Uncompiled>),
+    Interpreted(Executor<Interpreted>),
+}
 
-pub struct Defined;
+pub struct Uncompiled;
 pub struct Compiled;
+pub struct Interpreted;
 
 #[async_trait::async_trait]
 trait ExecutorImpl: Send + Sync {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
     fn get_execute_args(&self) -> Vec<String>;
+}
 
-    async fn compile(&mut self, solution: &Solution) -> Result<(), ()> {
-        let folder = solution.get_folder_name();
-        if Path::new(&folder).exists() {
-            return Err(());
+unsafe impl Send for Executor<Uncompiled> {}
+unsafe impl Sync for Executor<Uncompiled> {}
+
+unsafe impl Send for Executor<Compiled> {}
+unsafe impl Sync for Executor<Compiled> {}
+
+unsafe impl Send for Executor<Interpreted> {}
+unsafe impl Sync for Executor<Interpreted> {}
+
+impl From<Executor<Interpreted>> for Executor<Compiled> {
+    fn from(exec: Executor<Interpreted>) -> Self {
+        Executor {
+            inner: exec.inner,
+            state: PhantomData::<Compiled>,
         }
+    }
+}
 
-        {
-            std::fs::create_dir(&folder).unwrap();
-            let mut solution_file =
-                std::fs::File::create(format!("{}/{}", folder, COMPILE_FILE_NAME)).unwrap();
-            solution_file
-                .write_all(solution.get_src().as_bytes())
-                .unwrap();
-        }
-
-        let compiler_args = self.get_compiler_args(solution);
+impl Executor<Uncompiled> {
+    pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
+        let compiler_args = self.inner.get_compiler_args(solution);
 
         let status = std::process::Command::new(CONSOLE_CALL)
             .arg(CONSOLE_ARG)
@@ -57,13 +65,18 @@ trait ExecutorImpl: Send + Sync {
         if !status.success() {
             Err(())
         } else {
-            Ok(())
+            Ok(Executor {
+                inner: self.inner,
+                state: PhantomData::<Compiled>,
+            })
         }
     }
+}
 
-    async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
+impl Executor<Compiled> {
+    pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let folder = solution.get_folder_name();
-        let execute_args = self.get_execute_args();
+        let execute_args = self.inner.get_execute_args();
 
         let mut process = std::process::Command::new(CONSOLE_CALL)
             .current_dir(&folder)
@@ -92,35 +105,9 @@ trait ExecutorImpl: Send + Sync {
         }
     }
 
-    async fn clean(&self, solution: &Solution) {
+    pub async fn clean(self, solution: &Solution) {
         let folder = solution.get_folder_name();
         std::fs::remove_dir_all(&folder).unwrap();
-    }
-}
-
-unsafe impl Send for Executor<Defined> {}
-unsafe impl Sync for Executor<Defined> {}
-
-unsafe impl Send for Executor<Compiled> {}
-unsafe impl Sync for Executor<Compiled> {}
-
-impl Executor<Defined> {
-    pub async fn compile(mut self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
-        self.inner.compile(solution).await?;
-
-        Ok(Executor {
-            inner: self.inner,
-            state: PhantomData::<Compiled>,
-        })
-    }
-}
-
-impl Executor<Compiled> {
-    pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
-        self.inner.execute(solution, test).await
-    }
-    pub async fn clean(self, solution: &Solution) {
-        self.inner.clean(solution).await;
     }
 }
 

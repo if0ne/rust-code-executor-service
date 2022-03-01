@@ -1,11 +1,15 @@
 use crate::executors::rust_exec::RustExecutor;
-use crate::executors::{Defined, Executor};
+use crate::executors::DefinedLanguage;
 use rocket::http::Status;
 use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::io::Write;
+use std::path::Path;
+
+pub const COMPILE_FILE_NAME: &str = "code";
 
 #[derive(Deserialize)]
 pub struct Solution {
@@ -55,16 +59,38 @@ pub struct ExecutedTest {
 unsafe impl Send for ExecutedTest {}
 unsafe impl Sync for ExecutedTest {}
 
-fn define_lang(solution: &Solution) -> Result<Executor<Defined>, ()> {
+fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
     match solution.lang.as_str() {
         "rust" => Ok(RustExecutor.into()),
         _ => Err(()),
     }
 }
 
+async fn create_exec_file(solution: &Solution) -> Result<(), ()> {
+    let folder = solution.get_folder_name();
+    if Path::new(&folder).exists() {
+        return Err(());
+    }
+
+    {
+        std::fs::create_dir(&folder).unwrap();
+        let mut solution_file =
+            std::fs::File::create(format!("{}/{}", folder, COMPILE_FILE_NAME)).unwrap();
+        solution_file
+            .write_all(solution.get_src().as_bytes())
+            .unwrap();
+    }
+
+    Ok(())
+}
+
 async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
     let executor = define_lang(solution)?;
-    let executor = executor.compile(solution).await?;
+    create_exec_file(solution).await?;
+    let executor = match executor {
+        DefinedLanguage::Compiled(executor) => executor.compile(solution).await?,
+        DefinedLanguage::Interpreted(executor) => executor.into(),
+    };
 
     let results = solution
         .tests
