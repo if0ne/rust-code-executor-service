@@ -8,6 +8,17 @@ pub mod rust_exec;
 
 pub const COMPILE_FILE_NAME: &str = "code";
 
+#[cfg(windows)]
+pub const CONSOLE_CALL: &str = "cmd";
+#[cfg(not(windows))]
+pub const CONSOLE_CALL: &str = "sh";
+
+#[cfg(windows)]
+pub const CONSOLE_ARG: &str = "/C";
+#[cfg(not(windows))]
+pub const CONSOLE_ARG: &str = "-c";
+
+
 pub struct Defined;
 pub struct Compiled;
 
@@ -33,8 +44,8 @@ trait ExecutorImpl: Send + Sync {
 
         let compiler_args = self.get_compiler_args(solution);
 
-        let status = std::process::Command::new("cmd")
-            .arg("/C")
+        let status = std::process::Command::new(CONSOLE_CALL)
+            .arg(CONSOLE_ARG)
             .args(compiler_args)
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
@@ -54,9 +65,9 @@ trait ExecutorImpl: Send + Sync {
         let folder = solution.get_folder_name();
         let execute_args = self.get_execute_args();
 
-        let mut process = std::process::Command::new("cmd")
+        let mut process = std::process::Command::new(CONSOLE_CALL)
             .current_dir(&folder)
-            .arg("/C")
+            .arg(CONSOLE_ARG)
             .args(execute_args)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
