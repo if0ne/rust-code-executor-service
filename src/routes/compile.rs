@@ -8,6 +8,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::Path;
+use crate::executors::python_exec::PythonExecutor;
 
 pub const COMPILE_FILE_NAME: &str = "code";
 
@@ -62,6 +63,7 @@ unsafe impl Sync for ExecutedTest {}
 fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
     match solution.lang.as_str() {
         "rust" => Ok(RustExecutor.into()),
+        "python" => Ok(PythonExecutor.into()),
         _ => Err(()),
     }
 }
