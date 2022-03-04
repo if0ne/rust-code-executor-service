@@ -1,7 +1,10 @@
+use std::fmt::Debug;
 use crate::routes::compile::{ExecuteStats, ExecutedTest, Solution};
 use crate::ProcessInformer;
 use std::io::Write;
 use std::marker::PhantomData;
+#[cfg(not(windows))]
+use std::os::unix::fs::PermissionsExt;
 
 pub mod rust_exec;
 pub mod python_exec;
@@ -62,6 +65,16 @@ impl Executor<Uncompiled> {
             .unwrap()
             .wait()
             .map_err(|_| ())?;
+
+      /*  let mut solution_file =
+            std::fs::File::open(format!("{}/{}", solution.get_folder_name(), "code")).unwrap();
+
+        if !cfg!(windows) {
+            let mut perm = solution_file.metadata().unwrap().permissions();
+            println!("mode: {:o}", perm.mode());
+            perm.set_mode(0o755);
+            println!("mode: {:o}", perm.mode());
+        }*/
 
         if !status.success() {
             Err(())

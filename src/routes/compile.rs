@@ -12,6 +12,12 @@ use crate::executors::python_exec::PythonExecutor;
 
 pub const COMPILE_FILE_NAME: &str = "code";
 
+pub const COMPILED_FILE_NAME: &str = "compiled_file";
+#[cfg(windows)]
+pub const OS_PATH_PREFIX: &str = "";
+#[cfg(not(windows))]
+pub const OS_PATH_PREFIX: &str = "/usr/src/app/";
+
 #[derive(Deserialize)]
 pub struct Solution {
     lang: String,
