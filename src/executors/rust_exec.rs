@@ -7,7 +7,6 @@ pub struct RustExecutor;
 unsafe impl Sync for RustExecutor {}
 unsafe impl Send for RustExecutor {}
 
-#[async_trait::async_trait]
 impl ExecutorImpl for RustExecutor {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String> {
         vec![
