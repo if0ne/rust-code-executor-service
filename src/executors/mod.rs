@@ -1,13 +1,14 @@
-use std::fmt::Debug;
 use crate::routes::compile::{ExecuteStats, ExecutedTest, Solution};
 use crate::ProcessInformer;
+use serde::de::Unexpected::Str;
+use std::fmt::Debug;
 use std::io::Write;
 use std::marker::PhantomData;
 #[cfg(not(windows))]
 use std::os::unix::fs::PermissionsExt;
 
-pub mod rust_exec;
 pub mod python_exec;
+pub mod rust_exec;
 
 #[cfg(windows)]
 pub const CONSOLE_CALL: &str = "cmd";
@@ -58,7 +59,7 @@ impl Executor<Uncompiled> {
 
         let status = std::process::Command::new(CONSOLE_CALL)
             .arg(CONSOLE_ARG)
-            .args(compiler_args)
+            .arg(compiler_args.join(" "))
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .spawn()
@@ -66,7 +67,7 @@ impl Executor<Uncompiled> {
             .wait()
             .map_err(|_| ())?;
 
-      /*  let mut solution_file =
+        /*  let mut solution_file =
             std::fs::File::open(format!("{}/{}", solution.get_folder_name(), "code")).unwrap();
 
         if !cfg!(windows) {
@@ -91,11 +92,10 @@ impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let folder = solution.get_folder_name();
         let execute_args = self.inner.get_execute_args();
-
         let mut process = std::process::Command::new(CONSOLE_CALL)
             .current_dir(&folder)
             .arg(CONSOLE_ARG)
-            .args(execute_args)
+            .arg(execute_args.join(""))
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
@@ -109,12 +109,11 @@ impl Executor<Compiled> {
             .write_all(test.as_ref())
             .unwrap();
         let program_info = process.get_process_info().await.unwrap();
-        let output = process.wait_with_output().unwrap();
 
         ExecutedTest {
             time: program_info.execute_time.as_millis(),
             memory: program_info.total_memory / 1024,
-            result: String::from_utf8_lossy(&output.stdout).to_string(),
+            result: program_info.output,
             status: ExecuteStats::OK,
         }
     }

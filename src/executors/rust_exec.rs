@@ -1,5 +1,5 @@
 use crate::executors::{DefinedLanguage, Executor, ExecutorImpl, Uncompiled};
-use crate::routes::compile::{Solution, COMPILE_FILE_NAME, COMPILED_FILE_NAME, OS_PATH_PREFIX};
+use crate::routes::compile::{Solution, COMPILED_FILE_NAME, COMPILE_FILE_NAME, OS_PATH_PREFIX};
 use std::marker::PhantomData;
 
 pub struct RustExecutor;
@@ -9,22 +9,54 @@ unsafe impl Send for RustExecutor {}
 
 impl ExecutorImpl for RustExecutor {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String> {
-        println!("{}",format!("{}{}/{}", OS_PATH_PREFIX, solution.get_folder_name(), COMPILED_FILE_NAME).to_string());
-        println!("{}",format!("{}{}/{}", OS_PATH_PREFIX, solution.get_folder_name(), COMPILE_FILE_NAME).to_string());
+        println!(
+            "{}",
+            format!(
+                "{}{}/{}",
+                OS_PATH_PREFIX,
+                solution.get_folder_name(),
+                COMPILED_FILE_NAME
+            )
+            .to_string()
+        );
+        println!(
+            "{}",
+            format!(
+                "{}{}/{}",
+                OS_PATH_PREFIX,
+                solution.get_folder_name(),
+                COMPILE_FILE_NAME
+            )
+            .to_string()
+        );
         vec![
             "rustc".to_string(),
-          //  "-C".to_string(),
-          //  "debuginfo=0".to_string(),
-          //  "-C".to_string(),
-          //  "opt-level=3".to_string(),
+            "-C".to_string(),
+            "debuginfo=0".to_string(),
+            "-C".to_string(),
+            "opt-level=3".to_string(),
             "-o".to_string(),
-            format!("{}{}/{}", OS_PATH_PREFIX, solution.get_folder_name(), COMPILED_FILE_NAME),
-            format!("{}{}/{}", OS_PATH_PREFIX, solution.get_folder_name(), COMPILE_FILE_NAME),
+            format!(
+                "{}{}/{}",
+                OS_PATH_PREFIX,
+                solution.get_folder_name(),
+                COMPILED_FILE_NAME
+            ),
+            format!(
+                "{}{}/{}",
+                OS_PATH_PREFIX,
+                solution.get_folder_name(),
+                COMPILE_FILE_NAME
+            ),
         ]
     }
 
     fn get_execute_args(&self) -> Vec<String> {
-        vec![COMPILED_FILE_NAME.to_string()]
+        if !cfg!(target_os = "linux") {
+            vec![COMPILED_FILE_NAME.to_string()]
+        } else {
+            vec!["./".to_string(), COMPILED_FILE_NAME.to_string()]
+        }
     }
 }
 

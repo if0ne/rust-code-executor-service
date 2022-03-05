@@ -1,6 +1,6 @@
-use std::marker::PhantomData;
 use crate::executors::{DefinedLanguage, Executor, ExecutorImpl, Interpreted};
-use crate::routes::compile::{COMPILE_FILE_NAME, Solution};
+use crate::routes::compile::{Solution, COMPILE_FILE_NAME};
+use std::marker::PhantomData;
 
 pub struct PythonExecutor;
 
@@ -13,10 +13,7 @@ impl ExecutorImpl for PythonExecutor {
     }
 
     fn get_execute_args(&self) -> Vec<String> {
-        vec![
-            "python".to_string(),
-            COMPILE_FILE_NAME.to_string()
-        ]
+        vec!["python".to_string(), COMPILE_FILE_NAME.to_string()]
     }
 }
 
