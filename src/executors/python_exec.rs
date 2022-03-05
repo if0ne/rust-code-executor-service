@@ -8,7 +8,7 @@ unsafe impl Sync for PythonExecutor {}
 unsafe impl Send for PythonExecutor {}
 
 impl ExecutorImpl for PythonExecutor {
-    fn get_compiler_args(&self, solution: &Solution) -> Vec<String> {
+    fn get_compiler_args(&self, _: &Solution) -> Vec<String> {
         panic!("Program invariant is broken")
     }
 

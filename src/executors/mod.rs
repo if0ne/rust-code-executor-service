@@ -1,7 +1,5 @@
 use crate::routes::compile::{ExecuteStats, ExecutedTest, Solution};
 use crate::ProcessInformer;
-use serde::de::Unexpected::Str;
-use std::fmt::Debug;
 use std::io::Write;
 use std::marker::PhantomData;
 #[cfg(not(windows))]
@@ -57,25 +55,29 @@ impl Executor<Uncompiled> {
     pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
         let compiler_args = self.inner.get_compiler_args(solution);
 
-        let status = std::process::Command::new(CONSOLE_CALL)
-            .arg(CONSOLE_ARG)
-            .arg(compiler_args.join(" "))
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .spawn()
-            .unwrap()
-            .wait()
-            .map_err(|_| ())?;
+        let status = if cfg!(target_os = "windows") {
+            std::process::Command::new(CONSOLE_CALL)
+                .arg(CONSOLE_ARG)
+                .args(compiler_args)
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap()
+        } else {
+            std::process::Command::new(CONSOLE_CALL)
+                .arg(CONSOLE_ARG)
+                .arg(compiler_args.join(" "))
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap()
+        };
 
-        /*  let mut solution_file =
-            std::fs::File::open(format!("{}/{}", solution.get_folder_name(), "code")).unwrap();
 
-        if !cfg!(windows) {
-            let mut perm = solution_file.metadata().unwrap().permissions();
-            println!("mode: {:o}", perm.mode());
-            perm.set_mode(0o755);
-            println!("mode: {:o}", perm.mode());
-        }*/
 
         if !status.success() {
             Err(())
@@ -92,15 +94,29 @@ impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let folder = solution.get_folder_name();
         let execute_args = self.inner.get_execute_args();
-        let mut process = std::process::Command::new(CONSOLE_CALL)
-            .current_dir(&folder)
-            .arg(CONSOLE_ARG)
-            .arg(execute_args.join(""))
-            .stdin(std::process::Stdio::piped())
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .spawn()
-            .unwrap();
+
+        let mut process = if cfg!(target_os = "windows") {
+            std::process::Command::new(CONSOLE_CALL)
+                .current_dir(&folder)
+                .arg(CONSOLE_ARG)
+                .args(execute_args)
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+        } else {
+            std::process::Command::new(CONSOLE_CALL)
+                .current_dir(&folder)
+                .arg(CONSOLE_ARG)
+                .arg(execute_args.join(""))
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+        };
+
 
         process
             .stdin

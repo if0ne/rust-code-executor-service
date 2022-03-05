@@ -9,26 +9,6 @@ unsafe impl Send for RustExecutor {}
 
 impl ExecutorImpl for RustExecutor {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String> {
-        println!(
-            "{}",
-            format!(
-                "{}{}/{}",
-                OS_PATH_PREFIX,
-                solution.get_folder_name(),
-                COMPILED_FILE_NAME
-            )
-            .to_string()
-        );
-        println!(
-            "{}",
-            format!(
-                "{}{}/{}",
-                OS_PATH_PREFIX,
-                solution.get_folder_name(),
-                COMPILE_FILE_NAME
-            )
-            .to_string()
-        );
         vec![
             "rustc".to_string(),
             "-C".to_string(),

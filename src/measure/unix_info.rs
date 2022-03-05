@@ -1,4 +1,4 @@
-use crate::mesure::{ProcessInfo, ProcessInformer};
+use crate::measure::{ProcessInfo, ProcessInformer};
 
 use std::error::Error;
 use std::io::{BufRead, BufReader};
