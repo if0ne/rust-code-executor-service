@@ -3,8 +3,10 @@ use crate::ProcessInformer;
 use std::io::Write;
 use std::marker::PhantomData;
 
-pub mod rust_exec;
 pub mod python_exec;
+pub mod rust_exec;
+#[macro_use]
+mod into_generator;
 
 #[cfg(windows)]
 pub const CONSOLE_CALL: &str = "cmd";
