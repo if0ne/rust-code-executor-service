@@ -1,3 +1,4 @@
+use crate::executors::python_exec::PythonExecutor;
 use crate::executors::rust_exec::RustExecutor;
 use crate::executors::DefinedLanguage;
 use rocket::http::Status;
@@ -8,7 +9,6 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::Path;
-use crate::executors::python_exec::PythonExecutor;
 
 pub const COMPILE_FILE_NAME: &str = "code";
 
