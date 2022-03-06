@@ -1,18 +1,22 @@
+use crate::executors::python_exec::PythonExecutor;
 use crate::executors::rust_exec::RustExecutor;
 use crate::executors::DefinedLanguage;
 use rocket::http::Status;
 use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
+use rocket_okapi::okapi::schemars;
+use rocket_okapi::okapi::schemars::JsonSchema;
+use rocket_okapi::openapi;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::Path;
-use crate::executors::python_exec::PythonExecutor;
 
 pub const COMPILE_FILE_NAME: &str = "code";
 
-#[derive(Deserialize)]
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Solution {
     lang: String,
     source: String,
@@ -44,12 +48,13 @@ impl Solution {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 pub enum ExecuteStats {
     OK,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct ExecutedTest {
     pub(crate) time: u128,
     pub(crate) memory: u64,
@@ -107,6 +112,7 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
     Ok(results)
 }
 
+#[openapi(tag = "compile")]
 #[post("/compile", format = "json", data = "<solution>")]
 pub async fn compile(solution: Json<Solution>) -> status::Custom<String> {
     let result = handle_solution(&solution).await;
