@@ -11,7 +11,9 @@ use std::io::Write;
 use std::path::Path;
 
 pub const COMPILE_FILE_NAME: &str = "code";
-
+#[cfg(windows)]
+pub const COMPILED_FILE_NAME: &str = "compiled_file.exe";
+#[cfg(not(windows))]
 pub const COMPILED_FILE_NAME: &str = "compiled_file";
 #[cfg(windows)]
 pub const OS_PATH_PREFIX: &str = "";
@@ -46,7 +48,7 @@ impl Solution {
     }
 
     pub fn get_folder_name(&self) -> String {
-        format!("{}_{}", self.get_uuid(), self.get_hash())
+        format!("./{}_{}/", self.get_uuid(), self.get_hash())
     }
 }
 
