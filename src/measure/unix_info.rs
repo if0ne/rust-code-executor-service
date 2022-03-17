@@ -24,8 +24,6 @@ impl ProcessInformer for std::process::Child {
             Err(Box::new(std::io::Error::last_os_error()))
         } else {
             let info = unsafe { info.assume_init() };
-            //let output = self.wait_with_output()?;
-
             let reader = BufReader::new(output);
             let output = reader
                 .lines()

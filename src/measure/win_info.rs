@@ -28,21 +28,13 @@ fn get_windows_process_memory(instance: isize) -> u64 {
 #[async_trait::async_trait]
 impl ProcessInformer for std::process::Child {
     async fn get_process_info(mut self) -> Result<ProcessInfo, Box<dyn Error>> {
-        //let instance = self.as_raw_handle() as isize;
-
-        //let start = std::time::Instant::now();
+        let start = std::time::Instant::now();
         let output = BufReader::new(self.stdout.take().unwrap());
         let work_result = self.wait4().unwrap();
-
+        let duration = start.elapsed();
         let exit_status = work_result.status.code().unwrap();
-
-        let duration = work_result.rusage.stime + work_result.rusage.utime; //std::time::Instant::now();
-                                                                            //let output = self.wait_with_output()?;
-                                                                            //let delta = start.elapsed();
-
         let total_bytes = work_result.rusage.maxrss; //get_windows_process_memory(instance);
 
-        //let reader = BufReader::new(output);
         let readed = output
             .lines()
             .map(|line| line.unwrap())
@@ -52,8 +44,8 @@ impl ProcessInformer for std::process::Child {
         Ok(ProcessInfo {
             execute_time: duration,
             total_memory: total_bytes,
-            output: readed, //: String::from_utf8_lossy(&output.stdout).to_string(),
-            exit_status,    //output.status.code().unwrap_or(-1)
+            output: readed,
+            exit_status,
         })
     }
 }
@@ -70,8 +62,6 @@ impl ProcessInformer for tokio::process::Child {
 
         let output = status.await?;
         let delta = start.elapsed();
-
-        println!("{:?}", output);
 
         Ok(ProcessInfo {
             execute_time: delta,

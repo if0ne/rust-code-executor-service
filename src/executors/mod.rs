@@ -92,27 +92,12 @@ impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let folder = solution.get_folder_name();
         let execute_args = self.inner.get_execute_args().join("");
-        //TODO rename get_execute_args()
-        let mut process = if cfg!(target_os = "windows") {
-            std::process::Command::new(folder.to_string() + &execute_args)
-                .stdin(std::process::Stdio::piped())
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::piped())
-                .spawn()
-                .unwrap()
-        } else {
-            //TODO
-            std::process::Command::new(CONSOLE_CALL)
-                .current_dir(&folder)
-                .arg(CONSOLE_ARG)
-                .arg(execute_args)
-                .stdin(std::process::Stdio::piped())
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::piped())
-                .spawn()
-                .unwrap()
-        };
-        println!("{}", process.id());
+        let mut process = std::process::Command::new(folder.to_string() + &execute_args)
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
 
         process
             .stdin

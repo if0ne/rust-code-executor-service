@@ -35,7 +35,7 @@ impl ExecutorImpl for RustExecutor {
         if !cfg!(target_os = "linux") {
             vec![COMPILED_FILE_NAME.to_string()]
         } else {
-            vec!["./".to_string(), COMPILED_FILE_NAME.to_string()]
+            vec![COMPILED_FILE_NAME.to_string()]
         }
     }
 }
