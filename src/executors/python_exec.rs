@@ -1,6 +1,6 @@
 use crate::executors::ExecutorImpl;
 use crate::make_interpreter;
-use crate::routes::compile::{Solution, COMPILE_FILE_NAME};
+use crate::routes::compile::{Solution, SOURCE_FILE_NAME};
 
 pub struct PythonExecutor;
 
@@ -13,7 +13,7 @@ impl ExecutorImpl for PythonExecutor {
     }
 
     fn get_execute_args(&self) -> Vec<String> {
-        vec!["python".to_string(), COMPILE_FILE_NAME.to_string()]
+        vec!["python".to_string(), SOURCE_FILE_NAME.to_string()]
     }
 }
 

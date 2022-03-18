@@ -113,7 +113,7 @@ impl Executor<Compiled> {
             time: program_info.execute_time.as_millis(),
             memory: program_info.total_memory / 1024,
             result: program_info.output,
-            status: ExecuteStats::OK,
+            status: ExecuteStatus::OK,
         }
     }
 

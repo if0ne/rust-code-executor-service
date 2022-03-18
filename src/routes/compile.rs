@@ -13,7 +13,7 @@ use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::Path;
 
-pub const COMPILE_FILE_NAME: &str = "code";
+pub const SOURCE_FILE_NAME: &str = "code";
 #[cfg(windows)]
 pub const COMPILED_FILE_NAME: &str = "compiled_file.exe";
 #[cfg(not(windows))]
@@ -103,7 +103,7 @@ async fn create_exec_file(solution: &Solution) -> Result<(), ()> {
     {
         std::fs::create_dir(&folder).unwrap();
         let mut solution_file =
-            std::fs::File::create(format!("{}/{}", folder, COMPILE_FILE_NAME)).unwrap();
+            std::fs::File::create(format!("{}/{}", folder, SOURCE_FILE_NAME)).unwrap();
         solution_file
             .write_all(solution.get_src().as_bytes())
             .unwrap();
