@@ -1,10 +1,11 @@
-use crate::routes::compile::{ExecuteStats, ExecutedTest, Solution};
+use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution};
 use crate::ProcessInformer;
 use std::io::Write;
 use std::marker::PhantomData;
 
 pub mod python_exec;
 pub mod rust_exec;
+
 #[macro_use]
 mod into_generator;
 
@@ -104,7 +105,7 @@ impl Executor<Compiled> {
             time: program_info.execute_time.as_millis(),
             memory: program_info.total_memory / 1024,
             result: String::from_utf8_lossy(&output.stdout).to_string(),
-            status: ExecuteStats::OK,
+            status: ExecuteStatus::OK,
         }
     }
 

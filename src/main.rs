@@ -9,19 +9,15 @@ extern crate rocket;
 
 use crate::mesure::ProcessInformer;
 use crate::routes::compile::compile;
+use crate::routes::compile::okapi_add_operation_for_compile_;
 
 use dotenv::dotenv;
 use std::env;
 
-use rocket::http::{Method, Status};
-use rocket::response::status;
+use rocket::http::Method;
 use rocket::Config;
 use rocket_cors::{AllowedOrigins, CorsOptions};
-
-#[get("/")]
-async fn index() -> status::Custom<String> {
-    status::Custom(Status::Ok, String::from("All is ok or not"))
-}
+use rocket_okapi::{openapi_get_routes, swagger_ui::*};
 
 #[rocket::main]
 async fn main() {
@@ -48,7 +44,14 @@ async fn main() {
 
     rocket::custom(config)
         .attach(cors.to_cors().unwrap())
-        .mount("/", routes![index, compile])
+        .mount("/", openapi_get_routes![compile])
+        .mount(
+            "/swagger-ui/",
+            make_swagger_ui(&SwaggerUIConfig {
+                url: "../openapi.json".to_owned(),
+                ..Default::default()
+            }),
+        )
         .launch()
         .await
         .unwrap();

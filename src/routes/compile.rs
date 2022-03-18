@@ -5,6 +5,9 @@ use rocket::http::Status;
 use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
+use rocket_okapi::okapi::schemars;
+use rocket_okapi::okapi::schemars::JsonSchema;
+use rocket_okapi::openapi;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
@@ -12,11 +15,18 @@ use std::path::Path;
 
 pub const COMPILE_FILE_NAME: &str = "code";
 
-#[derive(Deserialize)]
+/// Решение пользователя
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Solution {
+    /// Выбранный язык
+    /// Возможные варианты: rust, python, c, cpp, java, js
     lang: String,
+    /// Исходный код решения
     source: String,
+    /// Идентификатор пользователя
     uuid: String,
+    /// Эталонные решения (только входные данные)
     tests: Vec<String>,
 }
 
@@ -44,17 +54,25 @@ impl Solution {
     }
 }
 
-#[derive(Serialize)]
-pub enum ExecuteStats {
+/// Статус выполнения запроса
+#[derive(Serialize, JsonSchema)]
+pub enum ExecuteStatus {
+    /// Всё окей
     OK,
 }
 
-#[derive(Serialize)]
+/// Информация о выполненном тесте
+#[derive(Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct ExecutedTest {
+    /// Время выполнения в мс
     pub(crate) time: u128,
+    /// Потребляемая память в Кб
     pub(crate) memory: u64,
+    /// Поток вывода процесса
     pub(crate) result: String,
-    pub(crate) status: ExecuteStats,
+    /// Статус
+    pub(crate) status: ExecuteStatus,
 }
 
 unsafe impl Send for ExecutedTest {}
@@ -107,13 +125,15 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
     Ok(results)
 }
 
+/// Проверка решения пользователя
+#[openapi(tag = "Compiling")]
 #[post("/compile", format = "json", data = "<solution>")]
-pub async fn compile(solution: Json<Solution>) -> status::Custom<String> {
+pub async fn compile(solution: Json<Solution>) -> status::Custom<Json<Vec<ExecutedTest>>> {
     let result = handle_solution(&solution).await;
 
     if let Ok(res) = result {
-        status::Custom(Status::Ok, serde_json::to_string(&res).unwrap())
+        status::Custom(Status::Ok, Json(res))
     } else {
-        status::Custom(Status::BadRequest, String::new())
+        status::Custom(Status::BadRequest, Json(vec![]))
     }
 }
