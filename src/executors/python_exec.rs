@@ -1,4 +1,4 @@
-use crate::executors::ExecutorImpl;
+use crate::executors::{ExecutorImpl, RunCommand};
 use crate::make_interpreter;
 use crate::routes::compile::{Solution, SOURCE_FILE_NAME};
 
@@ -12,8 +12,11 @@ impl ExecutorImpl for PythonExecutor {
         panic!("Program invariant is broken")
     }
 
-    fn get_execute_args(&self) -> (String, Vec<String>) {
-        ("python".to_string(), vec![SOURCE_FILE_NAME.to_string()])
+    fn get_execute_args(&self) -> (RunCommand, Vec<String>) {
+        (
+            Some("python".to_string()),
+            vec![SOURCE_FILE_NAME.to_string()],
+        )
     }
 }
 

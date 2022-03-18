@@ -1,5 +1,6 @@
 use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution};
 use crate::ProcessInformer;
+use std::borrow::BorrowMut;
 use std::io::Write;
 use std::marker::PhantomData;
 #[cfg(not(windows))]
@@ -35,9 +36,11 @@ pub struct Uncompiled;
 pub struct Compiled;
 pub struct Interpreted;
 
+type RunCommand = Option<String>;
+
 trait ExecutorImpl: Send + Sync {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
-    fn get_execute_args(&self) -> (String, Vec<String>);
+    fn get_execute_args(&self) -> (RunCommand, Vec<String>);
 }
 
 unsafe impl Send for Executor<Uncompiled> {}
@@ -97,16 +100,27 @@ impl Executor<Uncompiled> {
 impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let folder = solution.get_folder_name();
-        let execute_args = self.inner.get_execute_args();
-        let mut process = std::process::Command::new(
-            execute_args.0
-        )
-            .arg(folder.to_string() + &execute_args.1.join(""))
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .spawn()
-        .unwrap();
+        let (run_command, args) = self.inner.get_execute_args();
+
+        //TODO: две проверки одного и того же как-то не очень...
+        let mut process = if let Some(ref run_command) = run_command {
+            std::process::Command::new(run_command)
+        } else {
+            std::process::Command::new(format!("{}{}", &folder, &args.join("")))
+        };
+
+        let process = if run_command.is_some() {
+            process.arg(format!("{}{}", &folder, &args.join("")))
+        } else {
+            process.borrow_mut()
+        };
+
+        let mut process = process
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
 
         process
             .stdin
