@@ -15,15 +15,28 @@ impl ExecutorImpl for RustExecutor {
             "debuginfo=0".to_string(),
             "-C".to_string(),
             "opt-level=3".to_string(),
-            "-O".to_string(),
-            format!("{}/{}", solution.get_folder_name(), COMPILE_FILE_NAME),
-            "--out-dir".to_string(),
-            solution.get_folder_name(),
+            "-o".to_string(),
+            format!(
+                "{}{}/{}",
+                OS_PATH_PREFIX,
+                solution.get_folder_name(),
+                COMPILED_FILE_NAME
+            ),
+            format!(
+                "{}{}/{}",
+                OS_PATH_PREFIX,
+                solution.get_folder_name(),
+                COMPILE_FILE_NAME
+            ),
         ]
     }
 
     fn get_execute_args(&self) -> Vec<String> {
-        vec![COMPILE_FILE_NAME.to_string()]
+        if !cfg!(target_os = "linux") {
+            vec![COMPILED_FILE_NAME.to_string()]
+        } else {
+            vec![COMPILED_FILE_NAME.to_string()]
+        }
     }
 }
 

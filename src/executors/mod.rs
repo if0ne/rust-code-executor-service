@@ -2,6 +2,8 @@ use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution};
 use crate::ProcessInformer;
 use std::io::Write;
 use std::marker::PhantomData;
+#[cfg(not(windows))]
+use std::os::unix::fs::PermissionsExt;
 
 pub mod python_exec;
 pub mod rust_exec;
@@ -28,7 +30,6 @@ pub struct Uncompiled;
 pub struct Compiled;
 pub struct Interpreted;
 
-#[async_trait::async_trait]
 trait ExecutorImpl: Send + Sync {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
     fn get_execute_args(&self) -> Vec<String>;
@@ -56,15 +57,27 @@ impl Executor<Uncompiled> {
     pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
         let compiler_args = self.inner.get_compiler_args(solution);
 
-        let status = std::process::Command::new(CONSOLE_CALL)
-            .arg(CONSOLE_ARG)
-            .args(compiler_args)
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .spawn()
-            .unwrap()
-            .wait()
-            .map_err(|_| ())?;
+        let status = if cfg!(target_os = "windows") {
+            std::process::Command::new(CONSOLE_CALL)
+                .arg(CONSOLE_ARG)
+                .args(compiler_args)
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap()
+        } else {
+            std::process::Command::new(CONSOLE_CALL)
+                .arg(CONSOLE_ARG)
+                .arg(compiler_args.join(" "))
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap()
+        };
 
         if !status.success() {
             Err(())
@@ -80,12 +93,8 @@ impl Executor<Uncompiled> {
 impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let folder = solution.get_folder_name();
-        let execute_args = self.inner.get_execute_args();
-
-        let mut process = std::process::Command::new(CONSOLE_CALL)
-            .current_dir(&folder)
-            .arg(CONSOLE_ARG)
-            .args(execute_args)
+        let execute_args = self.inner.get_execute_args().join("");
+        let mut process = std::process::Command::new(folder.to_string() + &execute_args)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
@@ -98,14 +107,13 @@ impl Executor<Compiled> {
             .unwrap()
             .write_all(test.as_ref())
             .unwrap();
-        let program_info = process.get_process_info().await.unwrap();
-        let output = process.wait_with_output().unwrap();
+        let program_info = process.get_process_info().unwrap();
 
         ExecutedTest {
             time: program_info.execute_time.as_millis(),
             memory: program_info.total_memory / 1024,
-            result: String::from_utf8_lossy(&output.stdout).to_string(),
-            status: ExecuteStatus::OK,
+            result: program_info.output,
+            status: ExecuteStats::OK,
         }
     }
 

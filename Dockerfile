@@ -28,7 +28,7 @@ RUN apk add openjdk17
 RUN apk add python3
 RUN apk add nodejs
 
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/rust-code-executor-service /usr/src/app/target/
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/rust-code-executor-service /usr/src/app/
 
 EXPOSE 8000
-CMD /usr/src/app/target/rust-code-executor-service
+CMD /usr/src/app/rust-code-executor-service

@@ -1,13 +1,13 @@
 #![warn(clippy::all)]
 #![warn(rust_2018_idioms)]
 mod executors;
-mod mesure;
+mod measure;
 mod routes;
 
 #[macro_use]
 extern crate rocket;
 
-use crate::mesure::ProcessInformer;
+use crate::measure::ProcessInformer;
 use crate::routes::compile::compile;
 use crate::routes::compile::okapi_add_operation_for_compile_;
 
