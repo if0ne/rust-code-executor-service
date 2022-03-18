@@ -1,4 +1,4 @@
-use crate::routes::compile::{ExecuteStats, ExecutedTest, Solution};
+use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution};
 use crate::ProcessInformer;
 use std::io::Write;
 use std::marker::PhantomData;
@@ -7,6 +7,9 @@ use std::os::unix::fs::PermissionsExt;
 
 pub mod python_exec;
 pub mod rust_exec;
+
+#[macro_use]
+mod into_generator;
 
 #[cfg(windows)]
 pub const CONSOLE_CALL: &str = "cmd";

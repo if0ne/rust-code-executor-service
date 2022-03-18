@@ -1,6 +1,6 @@
-use crate::executors::{DefinedLanguage, Executor, ExecutorImpl, Interpreted};
+use crate::executors::ExecutorImpl;
+use crate::make_interpreter;
 use crate::routes::compile::{Solution, COMPILE_FILE_NAME};
-use std::marker::PhantomData;
 
 pub struct PythonExecutor;
 
@@ -17,11 +17,4 @@ impl ExecutorImpl for PythonExecutor {
     }
 }
 
-impl From<PythonExecutor> for DefinedLanguage {
-    fn from(exec: PythonExecutor) -> Self {
-        DefinedLanguage::Interpreted(Executor {
-            inner: Box::new(exec),
-            state: PhantomData::<Interpreted>,
-        })
-    }
-}
+make_interpreter!(PythonExecutor);

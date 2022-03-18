@@ -1,6 +1,6 @@
-use crate::executors::{DefinedLanguage, Executor, ExecutorImpl, Uncompiled};
-use crate::routes::compile::{Solution, COMPILED_FILE_NAME, COMPILE_FILE_NAME, OS_PATH_PREFIX};
-use std::marker::PhantomData;
+use crate::executors::ExecutorImpl;
+use crate::make_compiler;
+use crate::routes::compile::{Solution, COMPILE_FILE_NAME};
 
 pub struct RustExecutor;
 
@@ -40,11 +40,4 @@ impl ExecutorImpl for RustExecutor {
     }
 }
 
-impl From<RustExecutor> for DefinedLanguage {
-    fn from(exec: RustExecutor) -> Self {
-        DefinedLanguage::Compiled(Executor {
-            inner: Box::new(exec),
-            state: PhantomData::<Uncompiled>,
-        })
-    }
-}
+make_compiler!(RustExecutor);
