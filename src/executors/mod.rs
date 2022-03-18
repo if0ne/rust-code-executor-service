@@ -27,7 +27,6 @@ pub struct Uncompiled;
 pub struct Compiled;
 pub struct Interpreted;
 
-#[async_trait::async_trait]
 trait ExecutorImpl: Send + Sync {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
     fn get_execute_args(&self) -> Vec<String>;
@@ -105,7 +104,7 @@ impl Executor<Compiled> {
             .unwrap()
             .write_all(test.as_ref())
             .unwrap();
-        let program_info = process.get_process_info().await.unwrap();
+        let program_info = process.get_process_info().unwrap();
 
         ExecutedTest {
             time: program_info.execute_time.as_millis(),

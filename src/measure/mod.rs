@@ -8,13 +8,8 @@ pub struct ProcessInfo {
     pub exit_status: i32,
 }
 
-#[async_trait::async_trait]
 pub trait ProcessInformer {
-    async fn get_process_info(mut self) -> Result<ProcessInfo, Box<dyn std::error::Error>>;
+    fn get_process_info(self) -> Result<ProcessInfo, Box<dyn std::error::Error>>;
 }
 
-#[cfg(windows)]
-pub mod win_info;
-
-#[cfg(not(windows))]
-pub mod unix_info;
+pub mod info;
