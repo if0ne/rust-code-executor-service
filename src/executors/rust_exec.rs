@@ -1,6 +1,6 @@
 use crate::executors::ExecutorImpl;
 use crate::make_compiler;
-use crate::routes::compile::{Solution, SOURCE_FILE_NAME, COMPILED_FILE_NAME, OS_PATH_PREFIX};
+use crate::routes::compile::{Solution, COMPILED_FILE_NAME, OS_PATH_PREFIX, SOURCE_FILE_NAME};
 
 pub struct RustExecutor;
 
@@ -31,12 +31,8 @@ impl ExecutorImpl for RustExecutor {
         ]
     }
 
-    fn get_execute_args(&self) -> Vec<String> {
-        if !cfg!(target_os = "linux") {
-            vec![COMPILED_FILE_NAME.to_string()]
-        } else {
-            vec![COMPILED_FILE_NAME.to_string()]
-        }
+    fn get_execute_args(&self) -> (String, Vec<String>) {
+        ("".to_string(), vec![COMPILED_FILE_NAME.to_string()])
     }
 }
 

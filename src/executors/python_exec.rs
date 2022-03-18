@@ -12,8 +12,8 @@ impl ExecutorImpl for PythonExecutor {
         panic!("Program invariant is broken")
     }
 
-    fn get_execute_args(&self) -> Vec<String> {
-        vec!["python".to_string(), SOURCE_FILE_NAME.to_string()]
+    fn get_execute_args(&self) -> (String, Vec<String>) {
+        ("python".to_string(), vec![SOURCE_FILE_NAME.to_string()])
     }
 }
 
