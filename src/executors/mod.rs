@@ -6,6 +6,9 @@ use std::marker::PhantomData;
 pub mod python_exec;
 pub mod rust_exec;
 
+#[macro_use]
+mod into_generator;
+
 #[cfg(windows)]
 pub const CONSOLE_CALL: &str = "cmd";
 #[cfg(not(windows))]
