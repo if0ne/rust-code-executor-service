@@ -1,9 +1,7 @@
-use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution};
-use crate::ProcessInformer;
+use crate::measure::ProcessInformer;
+use crate::routes::compile::{ExecutedTest, Solution};
 use std::io::Write;
 use std::marker::PhantomData;
-#[cfg(not(windows))]
-use std::os::unix::fs::PermissionsExt;
 
 pub mod python_exec;
 pub mod rust_exec;
@@ -109,12 +107,7 @@ impl Executor<Compiled> {
             .unwrap();
         let program_info = process.get_process_info().unwrap();
 
-        ExecutedTest {
-            time: program_info.execute_time.as_millis(),
-            memory: program_info.total_memory / 1024,
-            result: program_info.output,
-            status: ExecuteStatus::OK,
-        }
+        ExecutedTest::new(program_info)
     }
 
     pub async fn clean(self, solution: &Solution) {
