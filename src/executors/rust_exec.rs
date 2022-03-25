@@ -4,9 +4,6 @@ use crate::routes::compile::{Solution, COMPILED_FILE_NAME, OS_PATH_PREFIX, SOURC
 
 pub struct RustExecutor;
 
-unsafe impl Sync for RustExecutor {}
-unsafe impl Send for RustExecutor {}
-
 impl ExecutorImpl for RustExecutor {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String> {
         vec![
@@ -31,8 +28,15 @@ impl ExecutorImpl for RustExecutor {
         ]
     }
 
-    fn get_execute_args(&self) -> (RunCommand, Vec<String>) {
-        (None, vec![COMPILED_FILE_NAME.to_string()])
+    fn get_execute_args(&self, solution: &Solution) -> (RunCommand, Vec<String>) {
+        (
+            None,
+            vec![solution.get_folder_name() + &COMPILED_FILE_NAME.to_string()],
+        )
+    }
+
+    fn get_source_filename(&self, _solution: &Solution) -> String {
+        SOURCE_FILE_NAME.to_string()
     }
 }
 

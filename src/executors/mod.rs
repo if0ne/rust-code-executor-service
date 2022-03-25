@@ -6,6 +6,7 @@ use std::marker::PhantomData;
 #[cfg(not(windows))]
 use std::os::unix::fs::PermissionsExt;
 
+pub mod java_exec;
 pub mod python_exec;
 pub mod rust_exec;
 
@@ -27,6 +28,15 @@ pub enum DefinedLanguage {
     Interpreted(Executor<Interpreted>),
 }
 
+impl DefinedLanguage {
+    pub fn get_source_filename(&self, solution: &Solution) -> String {
+        match self {
+            DefinedLanguage::Compiled(exec) => exec.get_source_filename(solution),
+            DefinedLanguage::Interpreted(exec) => exec.get_source_filename(solution),
+        }
+    }
+}
+
 pub struct Executor<S> {
     inner: Box<dyn ExecutorImpl>,
     state: std::marker::PhantomData<S>,
@@ -38,9 +48,10 @@ pub struct Interpreted;
 
 type RunCommand = Option<String>;
 
-trait ExecutorImpl: Send + Sync {
+trait ExecutorImpl {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
-    fn get_execute_args(&self) -> (RunCommand, Vec<String>);
+    fn get_execute_args(&self, solution: &Solution) -> (RunCommand, Vec<String>);
+    fn get_source_filename(&self, solution: &Solution) -> String;
 }
 
 unsafe impl Send for Executor<Uncompiled> {}
@@ -51,6 +62,12 @@ unsafe impl Sync for Executor<Compiled> {}
 
 unsafe impl Send for Executor<Interpreted> {}
 unsafe impl Sync for Executor<Interpreted> {}
+
+impl<T> Executor<T> {
+    pub fn get_source_filename(&self, solution: &Solution) -> String {
+        self.inner.get_source_filename(solution)
+    }
+}
 
 impl From<Executor<Interpreted>> for Executor<Compiled> {
     fn from(exec: Executor<Interpreted>) -> Self {
@@ -99,18 +116,17 @@ impl Executor<Uncompiled> {
 
 impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
-        let folder = solution.get_folder_name();
-        let (run_command, args) = self.inner.get_execute_args();
+        let (run_command, args) = self.inner.get_execute_args(solution);
 
         //TODO: две проверки одного и того же как-то не очень...
         let mut process = if let Some(ref run_command) = run_command {
             std::process::Command::new(run_command)
         } else {
-            std::process::Command::new(format!("{}{}", &folder, &args.join("")))
+            std::process::Command::new(args.join(""))
         };
 
         let process = if run_command.is_some() {
-            process.arg(format!("{}{}", &folder, &args.join("")))
+            process.args(args)
         } else {
             process.borrow_mut()
         };
