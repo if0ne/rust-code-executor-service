@@ -1,17 +1,13 @@
 use crate::executors::python_exec::PythonExecutor;
 use crate::executors::rust_exec::RustExecutor;
 use crate::executors::DefinedLanguage;
-use rocket::http::Status;
-use rocket::response::status;
-use rocket::serde::json::Json;
-use rocket::serde::{Deserialize, Serialize};
-use rocket_okapi::okapi::schemars;
-use rocket_okapi::okapi::schemars::JsonSchema;
-use rocket_okapi::openapi;
+use serde::{Deserialize, Serialize};
+use paperclip::actix::{Apiv2Schema, api_v2_operation, post, web::{self}};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::Path;
+use crate::measure::ProcessInfo;
 
 pub const SOURCE_FILE_NAME: &str = "code";
 #[cfg(windows)]
@@ -24,7 +20,7 @@ pub const OS_PATH_PREFIX: &str = "";
 pub const OS_PATH_PREFIX: &str = "/usr/src/app/";
 
 /// Решение пользователя
-#[derive(Deserialize, JsonSchema)]
+#[derive(Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 pub struct Solution {
     /// Выбранный язык
@@ -63,24 +59,35 @@ impl Solution {
 }
 
 /// Статус выполнения запроса
-#[derive(Serialize, JsonSchema)]
+#[derive(Serialize, Apiv2Schema)]
 pub enum ExecuteStatus {
     /// Всё окей
     OK,
 }
 
 /// Информация о выполненном тесте
-#[derive(Serialize, JsonSchema)]
+#[derive(Serialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutedTest {
     /// Время выполнения в мс
-    pub(crate) time: u128,
+    time: u128,
     /// Потребляемая память в Кб
-    pub(crate) memory: u64,
+    memory: u64,
     /// Поток вывода процесса
-    pub(crate) result: String,
+    result: String,
     /// Статус
-    pub(crate) status: ExecuteStatus,
+    status: ExecuteStatus,
+}
+
+impl ExecutedTest {
+    pub fn new(program_info: ProcessInfo) -> Self {
+        Self {
+            time: program_info.execute_time.as_millis(),
+            memory: program_info.total_memory / 1024,
+            result: program_info.output,
+            status: ExecuteStatus::OK,
+        }
+    }
 }
 
 unsafe impl Send for ExecutedTest {}
@@ -134,14 +141,14 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
 }
 
 /// Проверка решения пользователя
-#[openapi(tag = "Compiling")]
-#[post("/compile", format = "json", data = "<solution>")]
-pub async fn compile(solution: Json<Solution>) -> status::Custom<Json<Vec<ExecutedTest>>> {
+#[api_v2_operation]
+#[post("/compile")]
+pub async fn compile(solution: web::Json<Solution>) -> web::Json<Vec<ExecutedTest>> {
     let result = handle_solution(&solution).await;
 
     if let Ok(res) = result {
-        status::Custom(Status::Ok, Json(res))
+        web::Json(res)
     } else {
-        status::Custom(Status::BadRequest, Json(vec![]))
+        web::Json(Vec::<ExecutedTest>::new())
     }
 }

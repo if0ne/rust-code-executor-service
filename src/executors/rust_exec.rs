@@ -1,6 +1,6 @@
 use crate::executors::ExecutorImpl;
 use crate::make_compiler;
-use crate::routes::compile::{Solution, SOURCE_FILE_NAME, COMPILED_FILE_NAME, OS_PATH_PREFIX};
+use crate::routes::compile::{Solution, COMPILED_FILE_NAME, OS_PATH_PREFIX, SOURCE_FILE_NAME};
 
 pub struct RustExecutor;
 
