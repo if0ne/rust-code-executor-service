@@ -1,4 +1,4 @@
-use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution};
+use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution, SOURCE_FILE_NAME};
 use crate::ProcessInformer;
 use std::borrow::BorrowMut;
 use std::io::Write;
@@ -29,10 +29,10 @@ pub enum DefinedLanguage {
 }
 
 impl DefinedLanguage {
-    pub fn get_source_filename(&self, solution: &Solution) -> String {
+    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
         match self {
-            DefinedLanguage::Compiled(exec) => exec.get_source_filename(solution),
-            DefinedLanguage::Interpreted(exec) => exec.get_source_filename(solution),
+            DefinedLanguage::Compiled(exec) => exec.get_source_filename_with_ext(solution),
+            DefinedLanguage::Interpreted(exec) => exec.get_source_filename_with_ext(solution),
         }
     }
 }
@@ -51,7 +51,11 @@ type RunCommand = Option<String>;
 trait ExecutorImpl {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
     fn get_execute_args(&self, solution: &Solution) -> (RunCommand, Vec<String>);
-    fn get_source_filename(&self, solution: &Solution) -> String;
+    //TODO: Сделать тип Result<String>, т.к. могут отправить Java-код, в котором нет класса
+    fn get_source_filename(&self, _: &Solution) -> String {
+        SOURCE_FILE_NAME.to_string()
+    }
+    fn get_source_filename_with_ext(&self, solution: &Solution) -> String;
 }
 
 unsafe impl Send for Executor<Uncompiled> {}
@@ -64,8 +68,8 @@ unsafe impl Send for Executor<Interpreted> {}
 unsafe impl Sync for Executor<Interpreted> {}
 
 impl<T> Executor<T> {
-    pub fn get_source_filename(&self, solution: &Solution) -> String {
-        self.inner.get_source_filename(solution)
+    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
+        self.inner.get_source_filename_with_ext(solution)
     }
 }
 

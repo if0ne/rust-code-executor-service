@@ -107,7 +107,7 @@ async fn create_exec_file(solution: &Solution, executor: &DefinedLanguage) -> Re
         let mut solution_file = std::fs::File::create(format!(
             "{}/{}",
             folder,
-            executor.get_source_filename(solution)
+            executor.get_source_filename_with_ext(solution)
         ))
         .unwrap();
         solution_file

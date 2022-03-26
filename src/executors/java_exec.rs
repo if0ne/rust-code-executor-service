@@ -19,14 +19,12 @@ impl ExecutorImpl for JavaExecutor {
     }
 
     fn get_execute_args(&self, solution: &Solution) -> (RunCommand, Vec<String>) {
-        let file_name = self.get_source_filename(solution);
-        let slice = &file_name[..file_name.len() - ".java".len()];
         (
             Some("java".to_string()),
             vec![
                 "-classpath".to_string(),
                 solution.get_folder_name(),
-                slice.to_string(),
+                self.get_source_filename(solution),
             ],
         )
     }
@@ -34,9 +32,12 @@ impl ExecutorImpl for JavaExecutor {
     fn get_source_filename(&self, solution: &Solution) -> String {
         let regex =
             Regex::new(r"public class (?P<class>.*) \{[\s\S]*public static void main").unwrap();
-        let cap = regex.captures(solution.get_src()).unwrap();
-        let s = cap[1].to_string() + ".java";
-        s
+        let capture = regex.captures(solution.get_src()).unwrap();
+        capture[1].to_string()
+    }
+
+    fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
+        format!("{}{}", self.get_source_filename(solution), ".java")
     }
 }
 
