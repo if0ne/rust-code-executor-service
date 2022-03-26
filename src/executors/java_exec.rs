@@ -13,7 +13,7 @@ impl ExecutorImpl for JavaExecutor {
                 "{}{}/{}",
                 OS_PATH_PREFIX,
                 solution.get_folder_name(),
-                self.get_source_filename(solution)
+                self.get_source_filename_with_ext(solution)
             ),
         ]
     }
