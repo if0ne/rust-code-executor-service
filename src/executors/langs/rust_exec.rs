@@ -1,6 +1,7 @@
-use crate::executors::{ExecutorImpl, RunCommand};
+use crate::executors::consts::{COMPILED_FILE_NAME, OS_PATH_PREFIX};
+use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
-use crate::routes::compile::{Solution, COMPILED_FILE_NAME, OS_PATH_PREFIX};
+use crate::routes::execute_service::solution::Solution;
 
 pub struct RustExecutor;
 
@@ -31,7 +32,11 @@ impl ExecutorImpl for RustExecutor {
     fn get_execute_args(&self, solution: &Solution) -> (RunCommand, Vec<String>) {
         (
             None,
-            vec![solution.get_folder_name() + &COMPILED_FILE_NAME.to_string()],
+            vec![format!(
+                "{}{}",
+                solution.get_folder_name(),
+                COMPILED_FILE_NAME
+            )],
         )
     }
 

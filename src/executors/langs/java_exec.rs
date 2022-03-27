@@ -1,6 +1,7 @@
-use crate::executors::{ExecutorImpl, RunCommand};
+use crate::executors::consts::OS_PATH_PREFIX;
+use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
-use crate::routes::compile::{Solution, OS_PATH_PREFIX};
+use crate::routes::execute_service::solution::Solution;
 use regex::Regex;
 
 pub struct JavaExecutor;
