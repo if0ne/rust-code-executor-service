@@ -1150,6 +1150,7 @@ dependencies = [
  "dotenv",
  "env_logger",
  "futures",
+ "regex",
  "paperclip",
  "serde",
  "serde_json",

@@ -1,3 +1,4 @@
+use crate::executors::java_exec::JavaExecutor;
 use crate::executors::python_exec::PythonExecutor;
 use crate::executors::rust_exec::RustExecutor;
 use crate::executors::DefinedLanguage;
@@ -97,11 +98,12 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
     match solution.lang.as_str() {
         "rust" => Ok(RustExecutor.into()),
         "python" => Ok(PythonExecutor.into()),
+        "java" => Ok(JavaExecutor.into()),
         _ => Err(()),
     }
 }
 
-async fn create_exec_file(solution: &Solution) -> Result<(), ()> {
+async fn create_exec_file(solution: &Solution, executor: &DefinedLanguage) -> Result<(), ()> {
     let folder = solution.get_folder_name();
     if Path::new(&folder).exists() {
         return Err(());
@@ -109,8 +111,12 @@ async fn create_exec_file(solution: &Solution) -> Result<(), ()> {
 
     {
         std::fs::create_dir(&folder).unwrap();
-        let mut solution_file =
-            std::fs::File::create(format!("{}/{}", folder, SOURCE_FILE_NAME)).unwrap();
+        let mut solution_file = std::fs::File::create(format!(
+            "{}/{}",
+            folder,
+            executor.get_source_filename_with_ext(solution)
+        ))
+        .unwrap();
         solution_file
             .write_all(solution.get_src().as_bytes())
             .unwrap();
@@ -121,7 +127,9 @@ async fn create_exec_file(solution: &Solution) -> Result<(), ()> {
 
 async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
     let executor = define_lang(solution)?;
-    create_exec_file(solution).await?;
+
+    create_exec_file(solution, &executor).await?;
+
     let executor = match executor {
         DefinedLanguage::Compiled(executor) => executor.compile(solution).await?,
         DefinedLanguage::Interpreted(executor) => executor.into(),

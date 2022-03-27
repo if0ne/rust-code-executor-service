@@ -1,8 +1,10 @@
-use crate::measure::ProcessInformer;
-use crate::routes::compile::{ExecutedTest, Solution};
+use crate::routes::compile::{ExecuteStatus, ExecutedTest, Solution, SOURCE_FILE_NAME};
+use crate::ProcessInformer;
+use std::borrow::BorrowMut;
 use std::io::Write;
 use std::marker::PhantomData;
 
+pub mod java_exec;
 pub mod python_exec;
 pub mod rust_exec;
 
@@ -24,13 +26,34 @@ pub enum DefinedLanguage {
     Interpreted(Executor<Interpreted>),
 }
 
+impl DefinedLanguage {
+    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
+        match self {
+            DefinedLanguage::Compiled(exec) => exec.get_source_filename_with_ext(solution),
+            DefinedLanguage::Interpreted(exec) => exec.get_source_filename_with_ext(solution),
+        }
+    }
+}
+
+pub struct Executor<S> {
+    inner: Box<dyn ExecutorImpl>,
+    state: std::marker::PhantomData<S>,
+}
+
 pub struct Uncompiled;
 pub struct Compiled;
 pub struct Interpreted;
 
-trait ExecutorImpl: Send + Sync {
+type RunCommand = Option<String>;
+
+trait ExecutorImpl {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
-    fn get_execute_args(&self) -> Vec<String>;
+    fn get_execute_args(&self, solution: &Solution) -> (RunCommand, Vec<String>);
+    //TODO: Сделать тип Result<String>, т.к. могут отправить Java-код, в котором нет класса
+    fn get_source_filename(&self, _: &Solution) -> String {
+        SOURCE_FILE_NAME.to_string()
+    }
+    fn get_source_filename_with_ext(&self, solution: &Solution) -> String;
 }
 
 unsafe impl Send for Executor<Uncompiled> {}
@@ -41,6 +64,12 @@ unsafe impl Sync for Executor<Compiled> {}
 
 unsafe impl Send for Executor<Interpreted> {}
 unsafe impl Sync for Executor<Interpreted> {}
+
+impl<T> Executor<T> {
+    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
+        self.inner.get_source_filename_with_ext(solution)
+    }
+}
 
 impl From<Executor<Interpreted>> for Executor<Compiled> {
     fn from(exec: Executor<Interpreted>) -> Self {
@@ -54,7 +83,6 @@ impl From<Executor<Interpreted>> for Executor<Compiled> {
 impl Executor<Uncompiled> {
     pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
         let compiler_args = self.inner.get_compiler_args(solution);
-
         let status = if cfg!(target_os = "windows") {
             std::process::Command::new(CONSOLE_CALL)
                 .arg(CONSOLE_ARG)
@@ -90,9 +118,22 @@ impl Executor<Uncompiled> {
 
 impl Executor<Compiled> {
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
-        let folder = solution.get_folder_name();
-        let execute_args = self.inner.get_execute_args().join("");
-        let mut process = std::process::Command::new(folder.to_string() + &execute_args)
+        let (run_command, args) = self.inner.get_execute_args(solution);
+
+        //TODO: две проверки одного и того же как-то не очень...
+        let mut process = if let Some(ref run_command) = run_command {
+            std::process::Command::new(run_command)
+        } else {
+            std::process::Command::new(args.join(""))
+        };
+
+        let process = if run_command.is_some() {
+            process.args(args)
+        } else {
+            process.borrow_mut()
+        };
+
+        let mut process = process
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
@@ -114,9 +155,4 @@ impl Executor<Compiled> {
         let folder = solution.get_folder_name();
         std::fs::remove_dir_all(&folder).unwrap();
     }
-}
-
-pub struct Executor<S> {
-    inner: Box<dyn ExecutorImpl>,
-    state: std::marker::PhantomData<S>,
 }
