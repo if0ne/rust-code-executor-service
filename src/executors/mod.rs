@@ -3,8 +3,6 @@ use crate::ProcessInformer;
 use std::borrow::BorrowMut;
 use std::io::Write;
 use std::marker::PhantomData;
-#[cfg(not(windows))]
-use std::os::unix::fs::PermissionsExt;
 
 pub mod java_exec;
 pub mod python_exec;
@@ -150,12 +148,7 @@ impl Executor<Compiled> {
             .unwrap();
         let program_info = process.get_process_info().unwrap();
 
-        ExecutedTest {
-            time: program_info.execute_time.as_millis(),
-            memory: program_info.total_memory / 1024,
-            result: program_info.output,
-            status: ExecuteStatus::OK,
-        }
+        ExecutedTest::new(program_info)
     }
 
     pub async fn clean(self, solution: &Solution) {
