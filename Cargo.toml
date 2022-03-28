@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.6.1"
 actix-web = "4.0.1"
+ahash = "0.7.6"
 base64 = "0.20.0-alpha.1"
 cfg-if = "0.1.10"
 dotenv = "0.15.0"

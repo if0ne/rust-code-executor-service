@@ -1152,6 +1152,7 @@ version = "0.1.0"
 dependencies = [
  "actix-cors",
  "actix-web",
+ "ahash",
  "base64 0.20.0-alpha.1",
  "cfg-if 0.1.10",
  "dotenv",

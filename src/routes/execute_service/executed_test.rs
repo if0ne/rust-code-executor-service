@@ -68,7 +68,6 @@ impl From<ProcessInfo> for ExecutedTest {
             time: process_info.execute_time.as_millis(),
             memory: process_info.total_memory / 1024,
             result: process_info.output,
-            //TODO: Сделать правильный ExecuteStatus
             status: if process_info.exit_status == 0 {
                 ExecuteStatus::OK
             } else {

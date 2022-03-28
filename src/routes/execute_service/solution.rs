@@ -1,8 +1,9 @@
+use crate::routes::execute_service::CodeHasher;
 use paperclip::actix::Apiv2Schema;
 use serde::Deserialize;
 use std::cell::Cell;
-use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::marker::PhantomData;
 
 /// Решение пользователя
 #[derive(Deserialize, Apiv2Schema)]
@@ -39,12 +40,11 @@ impl Solution {
         &self.tests
     }
 
-    //TODO: Настройка хешера
-    fn get_hash(&self) -> u64 {
+    fn get_hash<T: Hasher + Default>(&self, _: PhantomData<T>) -> u64 {
         if let Some(hash) = self.cache_hash.get() {
             hash
         } else {
-            let mut hasher = DefaultHasher::new();
+            let mut hasher = T::default();
             self.source.hash(&mut hasher);
             let hash = hasher.finish();
 
@@ -58,6 +58,10 @@ impl Solution {
     }
 
     pub fn get_folder_name(&self) -> String {
-        format!("./{}_{}/", self.get_uuid(), self.get_hash())
+        format!(
+            "./{}_{}/",
+            self.get_uuid(),
+            self.get_hash(PhantomData::<CodeHasher>)
+        )
     }
 }
