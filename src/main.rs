@@ -4,6 +4,7 @@ mod executors;
 mod measure;
 mod routes;
 
+use crate::routes::secret_key::SecretKey;
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer};
@@ -19,7 +20,6 @@ async fn main() -> std::io::Result<()> {
         .parse::<u16>()
         .unwrap();
     let host_address = std::env::var("RUST_SERVICE_HOST").unwrap();
-
     HttpServer::new(|| {
         let cors = Cors::default()
             .allow_any_origin()
@@ -30,6 +30,7 @@ async fn main() -> std::io::Result<()> {
             .wrap_api()
             .wrap(Logger::new("%a %{User-Agent}i"))
             .wrap(cors)
+            .wrap(SecretKey)
             .service(execute)
             .with_json_spec_at("/api/spec/v2")
             .with_swagger_ui_at("/swagger-ui")
