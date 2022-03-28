@@ -1,7 +1,7 @@
 use crate::executors::consts::{CONSOLE_ARG, CONSOLE_CALL};
 use crate::executors::executor_impl::ExecutorImpl;
 use crate::measure::ProcessInformer;
-use crate::routes::execute_service::executed_test::ExecutedTest;
+use crate::routes::execute_service::executed_test::{ExecuteStatus, ExecutedTest};
 use crate::routes::execute_service::solution::Solution;
 use std::io::Write;
 use std::marker::PhantomData;
@@ -62,9 +62,9 @@ impl Executor<Uncompiled> {
                 .stdout(std::process::Stdio::piped())
                 .stderr(std::process::Stdio::piped())
                 .spawn()
-                .unwrap()
+                .map_err(|_| ())?
                 .wait()
-                .unwrap()
+                .map_err(|_| ())?
         } else {
             std::process::Command::new(CONSOLE_CALL)
                 .arg(CONSOLE_ARG)
@@ -72,9 +72,9 @@ impl Executor<Uncompiled> {
                 .stdout(std::process::Stdio::piped())
                 .stderr(std::process::Stdio::piped())
                 .spawn()
-                .unwrap()
+                .map_err(|_| ())?
                 .wait()
-                .unwrap()
+                .map_err(|_| ())?
         };
 
         if !status.success() {
@@ -105,26 +105,27 @@ impl Executor<Compiled> {
             &mut process
         };
 
-        let mut process = process
+        let process = process
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
-            .spawn()
-            .unwrap();
+            .spawn();
 
-        process
-            .stdin
-            .as_mut()
-            .unwrap()
-            .write_all(test.as_ref())
-            .unwrap();
-        let program_info = process.get_process_info().unwrap();
+        if let Ok(mut process) = process {
+            if let Some(stdin) = process.stdin.as_mut() {
+                if stdin.write_all(test.as_ref()).is_err() {
+                    return ExecutedTest::with_status(ExecuteStatus::IoFail);
+                }
+            } else {
+                return ExecutedTest::with_status(ExecuteStatus::IoFail);
+            }
 
-        program_info.into()
-    }
-
-    pub async fn clean(self, solution: &Solution) {
-        let folder = solution.get_folder_name();
-        std::fs::remove_dir_all(&folder).unwrap();
+            match process.get_process_info() {
+                Ok(program_info) => program_info.into(),
+                Err(err) => ExecutedTest::with_status(err),
+            }
+        } else {
+            ExecutedTest::with_status(ExecuteStatus::RuntimeError)
+        }
     }
 }

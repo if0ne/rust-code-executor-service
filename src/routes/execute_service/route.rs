@@ -2,7 +2,9 @@ use crate::executors::defined_language::DefinedLanguage;
 use crate::executors::langs::java_exec::JavaExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
-use crate::routes::execute_service::executed_test::ExecutedTest;
+use crate::routes::execute_service::executed_test::{
+    ExecuteStatus, ExecutedResponse, ExecutedTest,
+};
 use crate::routes::execute_service::solution::Solution;
 use paperclip::actix::{
     api_v2_operation, post,
@@ -14,25 +16,34 @@ use std::path::Path;
 /// Проверка решения пользователя
 #[api_v2_operation]
 #[post("/execute")]
-pub async fn execute(solution: web::Json<Solution>) -> web::Json<Vec<ExecutedTest>> {
+pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedResponse> {
     let result = handle_solution(&solution).await;
 
-    if let Ok(res) = result {
-        web::Json(res)
-    } else {
-        web::Json(Vec::<ExecutedTest>::new())
+    match result {
+        Ok(result) => web::Json(ExecutedResponse::new(ExecuteStatus::OK, result)),
+        Err(err) => web::Json(ExecutedResponse::new(err, vec![])),
     }
 }
 
-async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
-    let executor = define_lang(solution)?;
+async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ExecuteStatus> {
+    let executor = define_lang(solution).map_err(|_| ExecuteStatus::UnsupportedLang)?;
 
     create_exec_file(solution, &executor).await?;
 
     let executor = match executor {
-        DefinedLanguage::Compiled(executor) => executor.compile(solution).await?,
-        DefinedLanguage::Interpreted(executor) => executor.into(),
+        DefinedLanguage::Compiled(executor) => executor
+            .compile(solution)
+            .await
+            .map_err(|_| ExecuteStatus::CompileFail),
+        DefinedLanguage::Interpreted(executor) => Ok(executor.into()),
     };
+
+    if let Err(err) = executor {
+        clean(solution).await;
+        return Err(err);
+    }
+
+    let executor = executor.unwrap(/*invariant*/);
 
     let results = solution
         .get_tests()
@@ -42,8 +53,7 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ()> {
 
     let results = futures::future::join_all(results).await;
 
-    executor.clean(solution).await;
-
+    clean(solution).await;
     Ok(results)
 }
 
@@ -56,10 +66,13 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
     }
 }
 
-async fn create_exec_file(solution: &Solution, executor: &DefinedLanguage) -> Result<(), ()> {
+async fn create_exec_file(
+    solution: &Solution,
+    executor: &DefinedLanguage,
+) -> Result<(), ExecuteStatus> {
     let folder = solution.get_folder_name();
     if Path::new(&folder).exists() {
-        return Err(());
+        return Err(ExecuteStatus::AlreadyTest);
     }
 
     {
@@ -69,11 +82,18 @@ async fn create_exec_file(solution: &Solution, executor: &DefinedLanguage) -> Re
             folder,
             executor.get_source_filename_with_ext(solution)
         ))
-        .unwrap();
+        .map_err(|_| ExecuteStatus::NoSpace)?;
         solution_file
             .write_all(solution.get_src().as_bytes())
-            .unwrap();
+            .map_err(|_| ExecuteStatus::IoFail)?;
     }
 
     Ok(())
+}
+
+pub async fn clean(solution: &Solution) {
+    let folder = solution.get_folder_name();
+    if std::fs::remove_dir_all(&folder).is_err() {
+        log::warn!("Not found folder: {}", folder);
+    }
 }

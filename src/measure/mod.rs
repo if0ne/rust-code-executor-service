@@ -1,3 +1,4 @@
+use crate::routes::execute_service::executed_test::ExecuteStatus;
 use std::time::Duration;
 
 #[derive(Debug)]
@@ -9,7 +10,7 @@ pub struct ProcessInfo {
 }
 
 pub trait ProcessInformer {
-    fn get_process_info(self) -> Result<ProcessInfo, Box<dyn std::error::Error>>;
+    fn get_process_info(self) -> Result<ProcessInfo, ExecuteStatus>;
 }
 
 pub mod info;
