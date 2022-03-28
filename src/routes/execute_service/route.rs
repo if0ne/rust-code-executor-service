@@ -15,7 +15,7 @@ use std::path::Path;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
-#[post("/execute")]
+#[post("/execute", wrap = "SecretKey")]
 pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedResponse> {
     let result = handle_solution(&solution).await;
 
