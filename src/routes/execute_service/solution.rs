@@ -16,6 +16,8 @@ pub struct Solution {
     source: String,
     /// Идентификатор пользователя
     uuid: String,
+    /// Время ожидания выполнения (в мс)
+    timeout: u32,
     /// Эталонные решения (только входные данные)
     tests: Vec<String>,
 
@@ -63,5 +65,9 @@ impl Solution {
             self.get_uuid(),
             self.get_hash(PhantomData::<CodeHasher>)
         )
+    }
+
+    pub fn get_timeout_in_nano(&self) -> u32 {
+        self.timeout * 1_000_000
     }
 }

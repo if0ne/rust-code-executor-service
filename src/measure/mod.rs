@@ -10,7 +10,7 @@ pub struct ProcessInfo {
 }
 
 pub trait ProcessInformer {
-    fn get_process_info(self) -> Result<ProcessInfo, ExecuteStatus>;
+    fn get_process_info(self, timeout: std::time::Duration) -> Result<ProcessInfo, ExecuteStatus>;
 }
 
 pub mod info;

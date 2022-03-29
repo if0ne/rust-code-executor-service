@@ -1,5 +1,6 @@
 #![warn(clippy::all)]
 #![warn(rust_2018_idioms)]
+#![feature(thread_is_running)]
 mod executors;
 mod measure;
 mod routes;
@@ -8,7 +9,7 @@ use crate::routes::secret_key::SecretKey;
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer};
-use paperclip::actix::OpenApiExt;
+use paperclip::actix::{web, OpenApiExt};
 use routes::execute_service::route::execute;
 
 #[actix_web::main]
@@ -30,8 +31,7 @@ async fn main() -> std::io::Result<()> {
             .wrap_api()
             .wrap(Logger::new("%a %{User-Agent}i"))
             .wrap(cors)
-            .wrap(SecretKey)
-            .service(execute)
+            .service(web::scope("/").wrap(SecretKey).service(execute))
             .with_json_spec_at("/api/spec/v2")
             .with_swagger_ui_at("/swagger-ui")
             .build()

@@ -21,15 +21,6 @@ impl ExecutorState for Uncompiled {}
 impl ExecutorState for Compiled {}
 impl ExecutorState for Interpreted {}
 
-unsafe impl Send for Executor<Uncompiled> {}
-unsafe impl Sync for Executor<Uncompiled> {}
-
-unsafe impl Send for Executor<Compiled> {}
-unsafe impl Sync for Executor<Compiled> {}
-
-unsafe impl Send for Executor<Interpreted> {}
-unsafe impl Sync for Executor<Interpreted> {}
-
 impl<S: ExecutorState> Executor<S> {
     pub fn new(exec: Box<dyn ExecutorImpl>) -> Self {
         Executor {
@@ -120,7 +111,9 @@ impl Executor<Compiled> {
                 return ExecutedTest::with_status(ExecuteStatus::IoFail);
             }
 
-            match process.get_process_info() {
+            match process
+                .get_process_info(std::time::Duration::new(0, solution.get_timeout_in_nano()))
+            {
                 Ok(program_info) => program_info.into(),
                 Err(err) => ExecutedTest::with_status(err),
             }
