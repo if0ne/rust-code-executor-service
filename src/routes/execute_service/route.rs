@@ -12,10 +12,11 @@ use paperclip::actix::{
 };
 use std::io::Write;
 use std::path::Path;
+use crate::executors::langs::c_exec::CExecutor;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
-#[post("/execute", wrap = "SecretKey")]
+#[post("execute", wrap = "SecretKey")]
 pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedResponse> {
     let result = handle_solution(&solution).await;
 
@@ -62,6 +63,7 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
         "rust" => Ok(RustExecutor.into()),
         "python" => Ok(PythonExecutor.into()),
         "java" => Ok(JavaExecutor.into()),
+        "c" => Ok(CExecutor.into()),
         _ => Err(()),
     }
 }
