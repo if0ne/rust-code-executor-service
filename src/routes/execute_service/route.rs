@@ -1,4 +1,6 @@
 use crate::executors::defined_language::DefinedLanguage;
+use crate::executors::langs::c_exec::CExecutor;
+use crate::executors::langs::cpp_exec::CppExecutor;
 use crate::executors::langs::java_exec::JavaExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
@@ -12,11 +14,10 @@ use paperclip::actix::{
 };
 use std::io::Write;
 use std::path::Path;
-use crate::executors::langs::c_exec::CExecutor;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
-#[post("execute", wrap = "SecretKey")]
+#[post("/execute", wrap = "SecretKey")]
 pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedResponse> {
     let result = handle_solution(&solution).await;
 
@@ -64,6 +65,7 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
         "python" => Ok(PythonExecutor.into()),
         "java" => Ok(JavaExecutor.into()),
         "c" => Ok(CExecutor.into()),
+        "cpp" => Ok(CppExecutor.into()),
         _ => Err(()),
     }
 }

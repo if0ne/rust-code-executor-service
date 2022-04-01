@@ -32,7 +32,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%a %{User-Agent}i"))
             .wrap(cors)
             .service(web::scope("/api").wrap(SecretKey).service(execute))
-            .with_json_spec_at("/api/spec/v2")
+            .with_json_spec_at("spec")
             .with_swagger_ui_at("/swagger-ui")
             .build()
     })

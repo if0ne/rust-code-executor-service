@@ -4,13 +4,13 @@ use crate::make_compiler;
 use crate::routes::execute_service::solution::Solution;
 
 #[cfg(windows)]
-pub const COMPILER_NAME: &str = "mingw32-gcc";
+pub const COMPILER_NAME: &str = "mingw32-g++";
 #[cfg(not(windows))]
 pub const COMPILER_NAME: &str = "gcc";
 
-pub struct CExecutor;
+pub struct CppExecutor;
 
-impl ExecutorImpl for CExecutor {
+impl ExecutorImpl for CppExecutor {
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String> {
         vec![
             COMPILER_NAME.to_string(),
@@ -28,6 +28,7 @@ impl ExecutorImpl for CExecutor {
                 solution.get_folder_name(),
                 self.get_source_filename_with_ext(solution)
             ),
+            "-lstdc++".to_string(),
         ]
     }
 
@@ -43,8 +44,8 @@ impl ExecutorImpl for CExecutor {
     }
 
     fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
-        format!("{}{}", self.get_source_filename(solution), ".c")
+        format!("{}{}", self.get_source_filename(solution), ".cpp")
     }
 }
 
-make_compiler!(CExecutor);
+make_compiler!(CppExecutor);
