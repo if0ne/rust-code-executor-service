@@ -6,15 +6,22 @@ use crate::routes::execute_service::solution::Solution;
 use std::io::Write;
 use std::marker::PhantomData;
 
+/// Трейт-марка для одозначения состояние экзекьютора
 pub trait ExecutorState {}
 
+/// Экзекьютор - интерфейс
 pub struct Executor<S: ExecutorState> {
+    /// Внутренний экзекьютор (язык программирования)
     inner: Box<dyn ExecutorImpl>,
+    /// Состояние экзекьютора
     state: std::marker::PhantomData<S>,
 }
 
+/// Нескомпилированное состояние
 pub struct Uncompiled;
+/// Состояние, в котором можно выполнять тесты
 pub struct Compiled;
+/// Обозначение интерпретируемого языка программирования
 pub struct Interpreted;
 
 impl ExecutorState for Uncompiled {}
@@ -29,6 +36,7 @@ impl<S: ExecutorState> Executor<S> {
         }
     }
 
+    /// Название исходного файла с кодом
     pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
         self.inner.get_source_filename_with_ext(solution)
     }
@@ -44,29 +52,10 @@ impl From<Executor<Interpreted>> for Executor<Compiled> {
 }
 
 impl Executor<Uncompiled> {
+    /// Компиляция исходного кода
     pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
         let compiler_args = self.inner.get_compiler_args(solution);
-        let status = if cfg!(target_os = "windows") {
-            std::process::Command::new(CONSOLE_CALL)
-                .arg(CONSOLE_ARG)
-                .args(compiler_args)
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::piped())
-                .spawn()
-                .map_err(|_| ())?
-                .wait()
-                .map_err(|_| ())?
-        } else {
-            std::process::Command::new(CONSOLE_CALL)
-                .arg(CONSOLE_ARG)
-                .arg(compiler_args.join(" "))
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::piped())
-                .spawn()
-                .map_err(|_| ())?
-                .wait()
-                .map_err(|_| ())?
-        };
+        let status = compile_src_code(compiler_args)?;
 
         if !status.success() {
             Err(())
@@ -79,11 +68,39 @@ impl Executor<Uncompiled> {
     }
 }
 
+/// Компиляция кода в Windows
+#[cfg(windows)]
+fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStatus, ()> {
+    Ok(std::process::Command::new(CONSOLE_CALL)
+        .arg(CONSOLE_ARG)
+        .args(compiler_args)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|_| ())?
+        .wait()
+        .map_err(|_| ())?)
+}
+
+/// Компиляция кода в Unix
+#[cfg(not(windows))]
+fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStatus, ()> {
+    Ok(std::process::Command::new(CONSOLE_CALL)
+        .arg(CONSOLE_ARG)
+        .arg(compiler_args.join(" "))
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|_| ())?
+        .wait()
+        .map_err(|_| ())?)
+}
+
 impl Executor<Compiled> {
+    /// Выполнение теста
     pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let (run_command, args) = self.inner.get_execute_args(solution);
 
-        //TODO: две проверки одного и того же как-то не очень...
         let mut process = if let Some(ref run_command) = run_command {
             std::process::Command::new(run_command)
         } else {

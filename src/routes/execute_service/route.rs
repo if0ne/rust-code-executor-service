@@ -17,7 +17,7 @@ use std::path::Path;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
-#[post("/execute", wrap = "SecretKey")]
+#[post("execute", wrap = "SecretKey")]
 pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedResponse> {
     let result = handle_solution(&solution).await;
 
@@ -27,11 +27,15 @@ pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedRespons
     }
 }
 
+/// Обработка полученного запроса (/execute)
 async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ExecuteStatus> {
+    // Получение языка программирования
     let executor = define_lang(solution).map_err(|_| ExecuteStatus::UnsupportedLang)?;
 
+    // Создание файла с кодом в зависимости от выбранного языка (см. Java)
     create_exec_file(solution, &executor).await?;
 
+    // Компиляция программы, если выбранный ЯП - то переход на стадию выполнения (Compiled)
     let executor = match executor {
         DefinedLanguage::Compiled(executor) => executor
             .compile(solution)
@@ -40,13 +44,16 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, Execu
         DefinedLanguage::Interpreted(executor) => Ok(executor.into()),
     };
 
+    // Если произошла ошибка компиляции, то очищаем созданную директорию и возвращаем ошибку
     if let Err(err) = executor {
         clean(solution).await;
         return Err(err);
     }
 
-    let executor = executor.unwrap(/*invariant*/);
+    // Unwrap - инвариант, т.к. выше проверка на ошибку
+    let executor = executor.unwrap();
 
+    // TODO: сделать асинхронный или параллельный запуск проверки тестов
     let results = solution
         .get_tests()
         .iter()
@@ -59,6 +66,7 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, Execu
     Ok(results)
 }
 
+/// Создание Executor-а в зависимости от отправленной строки
 fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
     match solution.get_lang() {
         "rust" => Ok(RustExecutor.into()),
@@ -70,34 +78,36 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
     }
 }
 
+/// Создание файла с кодом, отправленным пользователем
 async fn create_exec_file(
     solution: &Solution,
     executor: &DefinedLanguage,
 ) -> Result<(), ExecuteStatus> {
     let folder = solution.get_folder_name();
+
+    // Не делать проверку того же решение, если оно в настоящий момент проверяется
     if Path::new(&folder).exists() {
         return Err(ExecuteStatus::AlreadyTest);
     }
 
-    {
-        std::fs::create_dir(&folder).unwrap();
-        let mut solution_file = std::fs::File::create(format!(
-            "{}/{}",
-            folder,
-            executor.get_source_filename_with_ext(solution)
-        ))
-        .map_err(|_| ExecuteStatus::NoSpace)?;
-        solution_file
-            .write_all(solution.get_src().as_bytes())
-            .map_err(|_| ExecuteStatus::IoFail)?;
-    }
+    std::fs::create_dir(&folder).unwrap();
+    let mut solution_file = std::fs::File::create(format!(
+        "{}/{}",
+        folder,
+        executor.get_source_filename_with_ext(solution)
+    ))
+    .map_err(|_| ExecuteStatus::NoSpace)?;
+    solution_file
+        .write_all(solution.get_src().as_bytes())
+        .map_err(|_| ExecuteStatus::IoFail)?;
 
     Ok(())
 }
 
-pub async fn clean(solution: &Solution) {
+/// Очистка создаваемой папки с решением и executable-файлом
+async fn clean(solution: &Solution) {
     let folder = solution.get_folder_name();
     if std::fs::remove_dir_all(&folder).is_err() {
-        log::warn!("Not found folder: {}", folder);
+        log::warn!("Can not remove a folder: {}", folder);
     }
 }

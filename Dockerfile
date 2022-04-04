@@ -1,4 +1,4 @@
-FROM rust:1.58.1-alpine AS chef
+FROM ghcr.io/rust-lang/rust:nightly-alpine AS chef
 WORKDIR /app
 RUN apk upgrade
 RUN apk add musl-dev
@@ -16,7 +16,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
 
 COPY . .
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN cargo +nightly build --release --target x86_64-unknown-linux-musl
 
 
 FROM alpine AS Runner

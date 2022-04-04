@@ -38,6 +38,7 @@ pub struct ExecutedTest {
 }
 
 impl ExecutedTest {
+    /// Для возвращение пустого элемента со статусом отличного от "OK"
     pub fn with_status(status: ExecuteStatus) -> Self {
         Self {
             time: 0,
@@ -48,7 +49,7 @@ impl ExecutedTest {
     }
 }
 
-/// Информация о выполненном тесте
+/// Информация о выполненненых тестах
 #[derive(Serialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutedResponse {
@@ -66,6 +67,7 @@ impl ExecutedResponse {
 
 impl From<ProcessInfo> for ExecutedTest {
     fn from(process_info: ProcessInfo) -> Self {
+        // Если возвращаемое значение отличное от нуля, то ошибка произошла во время выполнения
         Self {
             time: process_info.execute_time.as_millis(),
             memory: process_info.total_memory / 1024,

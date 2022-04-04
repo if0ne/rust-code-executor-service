@@ -30,18 +30,22 @@ unsafe impl Send for Solution {}
 unsafe impl Sync for Solution {}
 
 impl Solution {
+    /// UUID
     pub fn get_uuid(&self) -> &str {
         &self.uuid
     }
 
+    /// Язык программирования
     pub fn get_lang(&self) -> &str {
         &self.lang
     }
 
+    /// Список тестов
     pub fn get_tests(&self) -> &Vec<String> {
         &self.tests
     }
 
+    /// Получение хеша по исходному коду
     fn get_hash<T: Hasher + Default>(&self, _: PhantomData<T>) -> u64 {
         if let Some(hash) = self.cache_hash.get() {
             hash
@@ -55,10 +59,12 @@ impl Solution {
         }
     }
 
+    /// Исходный код
     pub fn get_src(&self) -> &str {
         &self.source
     }
 
+    /// Название директории для работы с решением
     pub fn get_folder_name(&self) -> String {
         format!(
             "./{}_{}/",
@@ -67,6 +73,7 @@ impl Solution {
         )
     }
 
+    /// Время для таймаута в наносекундах (для std::time::Duration)
     pub fn get_timeout_in_nano(&self) -> u32 {
         self.timeout * 1_000_000
     }
