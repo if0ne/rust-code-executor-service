@@ -8,18 +8,23 @@ use crate::routes::execute_service::executed_test::{
     ExecuteStatus, ExecutedResponse, ExecutedTest,
 };
 use crate::routes::execute_service::solution::Solution;
+use actix_web::web::Data;
 use paperclip::actix::{
     api_v2_operation, post,
     web::{self},
 };
+use rayon::prelude::*;
 use std::io::Write;
 use std::path::Path;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
 #[post("execute", wrap = "SecretKey")]
-pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedResponse> {
-    let result = handle_solution(&solution).await;
+pub async fn execute(
+    solution: web::Json<Solution>,
+    pool: Data<rayon::ThreadPool>,
+) -> web::Json<ExecutedResponse> {
+    let result = handle_solution(&solution, pool.get_ref()).await;
 
     match result {
         Ok(result) => web::Json(ExecutedResponse::new(ExecuteStatus::OK, result)),
@@ -28,7 +33,10 @@ pub async fn execute(solution: web::Json<Solution>) -> web::Json<ExecutedRespons
 }
 
 /// Обработка полученного запроса (/execute)
-async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, ExecuteStatus> {
+async fn handle_solution(
+    solution: &Solution,
+    pool: &rayon::ThreadPool,
+) -> Result<Vec<ExecutedTest>, ExecuteStatus> {
     // Получение языка программирования
     let executor = define_lang(solution).map_err(|_| ExecuteStatus::UnsupportedLang)?;
 
@@ -53,14 +61,13 @@ async fn handle_solution(solution: &Solution) -> Result<Vec<ExecutedTest>, Execu
     // Unwrap - инвариант, т.к. выше проверка на ошибку
     let executor = executor.unwrap();
 
-    // TODO: сделать асинхронный или параллельный запуск проверки тестов
-    let results = solution
-        .get_tests()
-        .iter()
-        .map(|test| executor.execute(solution, test))
-        .collect::<Vec<_>>();
-
-    let results = futures::future::join_all(results).await;
+    let results = pool.install(|| {
+        solution
+            .get_tests()
+            .par_iter()
+            .map(|test| executor.execute(solution, test))
+            .collect::<Vec<ExecutedTest>>()
+    });
 
     clean(solution).await;
     Ok(results)

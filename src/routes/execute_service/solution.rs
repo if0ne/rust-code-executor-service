@@ -17,7 +17,7 @@ pub struct Solution {
     /// Идентификатор пользователя
     uuid: String,
     /// Время ожидания выполнения (в мс)
-    timeout: u32,
+    timeout: u64,
     /// Эталонные решения (только входные данные)
     tests: Vec<String>,
 
@@ -73,8 +73,8 @@ impl Solution {
         )
     }
 
-    /// Время для таймаута в наносекундах (для std::time::Duration)
-    pub fn get_timeout_in_nano(&self) -> u32 {
-        self.timeout * 1_000_000
+    /// Время для таймаута в миллисекундах
+    pub fn get_timeout_in_millis(&self) -> u64 {
+        self.timeout
     }
 }

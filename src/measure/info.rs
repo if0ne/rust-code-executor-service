@@ -3,6 +3,7 @@ use crate::routes::execute_service::executed_test::ExecuteStatus;
 use std::io::{BufRead, BufReader};
 use wait4::Wait4;
 
+#[allow(clippy::single_match)]
 impl ProcessInformer for std::process::Child {
     fn get_process_info(
         mut self,
@@ -14,14 +15,13 @@ impl ProcessInformer for std::process::Child {
         // Получение дескриптора потока (для unix - id)
         let pid = get_pid(&self);
 
-        // TODO: сделать thread-pool
         // Запуск процесса в отдельном потоке для решения зацикливания процесса
         let (sender, receiver) = std::sync::mpsc::channel();
         let process = std::thread::spawn(move || {
             let work_result = self.wait4().map_err(|_| ExecuteStatus::RuntimeError);
             match sender.send(work_result) {
-                Ok(_) => {}
-                Err(_) => {}
+                Ok(_) => {}  // Значение отправилось
+                Err(_) => {} // Процесс зациклился, либо выполняется дольше положенного времени
             }
         });
 
