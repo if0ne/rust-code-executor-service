@@ -14,6 +14,7 @@ use routes::execute_service::route::execute;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    //TODO: Настроить логгер по-нормальному
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
     dotenv::dotenv().ok();
     let port = std::env::var("RUST_SERVICE_PORT")
