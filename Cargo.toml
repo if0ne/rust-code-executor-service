@@ -15,6 +15,7 @@ futures = "0.3.21"
 lazy_static = "1.4.0"
 log = "0.4.16"
 paperclip = { git = "https://github.com/if0ne/paperclip", features = ["actix4", "swagger-ui"] }
+rayon = "1.5.1"
 regex = "1"
 tokio = { version = "1.16.1", features = ["io-std", "process"] }
 serde = "1.0.136"

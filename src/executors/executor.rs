@@ -17,6 +17,9 @@ pub struct Executor<S: ExecutorState> {
     state: std::marker::PhantomData<S>,
 }
 
+unsafe impl<S: ExecutorState> Sync for Executor<S> {}
+unsafe impl<S: ExecutorState> Send for Executor<S> {}
+
 /// Нескомпилированное состояние
 pub struct Uncompiled;
 /// Состояние, в котором можно выполнять тесты
@@ -69,6 +72,7 @@ impl Executor<Uncompiled> {
 }
 
 /// Компиляция кода в Windows
+#[allow(clippy::needless_question_mark)]
 #[cfg(windows)]
 fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStatus, ()> {
     Ok(std::process::Command::new(CONSOLE_CALL)
@@ -83,6 +87,7 @@ fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStat
 }
 
 /// Компиляция кода в Unix
+#[allow(clippy::needless_question_mark)]
 #[cfg(not(windows))]
 fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStatus, ()> {
     Ok(std::process::Command::new(CONSOLE_CALL)
@@ -98,7 +103,7 @@ fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStat
 
 impl Executor<Compiled> {
     /// Выполнение теста
-    pub async fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
+    pub fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
         let (run_command, args) = self.inner.get_execute_args(solution);
 
         let mut process = if let Some(ref run_command) = run_command {
@@ -128,9 +133,9 @@ impl Executor<Compiled> {
                 return ExecutedTest::with_status(ExecuteStatus::IoFail);
             }
 
-            match process
-                .get_process_info(std::time::Duration::new(0, solution.get_timeout_in_nano()))
-            {
+            match process.get_process_info(std::time::Duration::from_millis(
+                solution.get_timeout_in_millis(),
+            )) {
                 Ok(program_info) => program_info.into(),
                 Err(err) => ExecutedTest::with_status(err),
             }

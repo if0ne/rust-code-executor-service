@@ -2,7 +2,6 @@
 /// Вытягивается из хедера (x-api-key) запроса секретный ключ
 /// При неудачи выкидывается BadRequest
 /// Как реализовано смотреть: https://actix.rs/docs/middleware/
-
 use actix_web::dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::Error;
 use futures::future::LocalBoxFuture;

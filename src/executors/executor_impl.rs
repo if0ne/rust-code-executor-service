@@ -4,7 +4,7 @@ use crate::routes::execute_service::solution::Solution;
 /// Команда запуска (для интерпретируемых языков)
 pub type RunCommand = Option<String>;
 
-pub trait ExecutorImpl {
+pub trait ExecutorImpl: Send + Sync {
     /// Аргументы для компиляции
     fn get_compiler_args(&self, solution: &Solution) -> Vec<String>;
     /// Аргументы для запуска теста
