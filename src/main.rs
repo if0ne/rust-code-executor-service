@@ -4,6 +4,7 @@
 mod executors;
 mod measure;
 mod routes;
+mod test;
 
 use crate::routes::secret_key::SecretKey;
 use actix_cors::Cors;

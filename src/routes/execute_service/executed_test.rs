@@ -1,9 +1,9 @@
 use crate::measure::ProcessInfo;
 use paperclip::actix::Apiv2Schema;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Статус выполнения запроса
-#[derive(Debug, Serialize, Apiv2Schema)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Apiv2Schema)]
 pub enum ExecuteStatus {
     /// Всё окей
     OK,
@@ -24,7 +24,7 @@ pub enum ExecuteStatus {
 }
 
 /// Информация о выполненном тесте
-#[derive(Serialize, Apiv2Schema)]
+#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutedTest {
     /// Время выполнения в мс
@@ -50,7 +50,7 @@ impl ExecutedTest {
 }
 
 /// Информация о выполненненых тестах
-#[derive(Serialize, Apiv2Schema)]
+#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutedResponse {
     /// Статус
@@ -59,9 +59,21 @@ pub struct ExecutedResponse {
     tests: Vec<ExecutedTest>,
 }
 
+#[allow(dead_code)]
 impl ExecutedResponse {
+    /// Конструктор
     pub fn new(status: ExecuteStatus, tests: Vec<ExecutedTest>) -> Self {
         Self { status, tests }
+    }
+
+    /// Получение статуса (для тестирования)
+    pub fn get_status(&self) -> &ExecuteStatus {
+        &self.status
+    }
+
+    /// Получение результатов выполнения программы
+    pub fn get_raw_answers(&self) -> Vec<&str> {
+        self.tests.iter().map(|test| test.result.as_str()).collect()
     }
 }
 
