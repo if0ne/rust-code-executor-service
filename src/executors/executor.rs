@@ -3,7 +3,8 @@ use crate::executors::executor_impl::ExecutorImpl;
 use crate::measure::ProcessInformer;
 use crate::routes::execute_service::executed_test::{ExecuteStatus, ExecutedTest};
 use crate::routes::execute_service::solution::Solution;
-use std::io::{BufRead, BufReader, Write};
+use crate::utils::read_from_buffer;
+use std::io::{BufReader, Write};
 use std::marker::PhantomData;
 
 /// Трейт-марка для одозначения состояние экзекьютора
@@ -40,7 +41,7 @@ impl<S: ExecutorState> Executor<S> {
     }
 
     /// Название исходного файла с кодом
-    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
+    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> Result<String, ()> {
         self.inner.get_source_filename_with_ext(solution)
     }
 }
@@ -57,7 +58,10 @@ impl From<Executor<Interpreted>> for Executor<Compiled> {
 impl Executor<Uncompiled> {
     /// Компиляция исходного кода
     pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, String> {
-        let compiler_args = self.inner.get_compiler_args(solution);
+        let compiler_args = self
+            .inner
+            .get_compiler_args(solution)
+            .map_err(|_| "".to_string())?;
         let (status, stderr) = compile_src_code(compiler_args).map_err(|_| "".to_string())?;
 
         if !status.success() {
@@ -85,19 +89,7 @@ fn compile_src_code(
         .spawn()
         .map_err(|_| ExecuteStatus::CompileFail)?;
     let stderr = BufReader::new(compile_process.stderr.take().ok_or(ExecuteStatus::IoFail)?);
-    let stderr = stderr.lines().collect::<Vec<_>>();
-
-    for line in stderr.iter() {
-        if line.is_err() {
-            return Err(ExecuteStatus::IoFail);
-        }
-    }
-
-    let stderr = stderr
-        .into_iter()
-        .map(|line| line.unwrap())
-        .collect::<Vec<_>>()
-        .join("\n");
+    let stderr = read_from_buffer(stderr)?;
 
     let status = compile_process
         .wait()
@@ -119,20 +111,7 @@ fn compile_src_code(
         .spawn()
         .map_err(|_| ExecuteStatus::CompileFail)?;
 
-    let stderr = BufReader::new(compile_process.stderr.take().ok_or(ExecuteStatus::IoFail)?);
-    let stderr = stderr.lines().collect::<Vec<_>>();
-
-    for line in stderr.iter() {
-        if line.is_err() {
-            return Err(ExecuteStatus::IoFail);
-        }
-    }
-
-    let stderr = stderr
-        .into_iter()
-        .map(|line| line.unwrap())
-        .collect::<Vec<_>>()
-        .join("\n");
+    let stderr = get_stderr(&compile_process)?;
 
     let status = compile_process
         .wait()
@@ -143,7 +122,8 @@ fn compile_src_code(
 impl Executor<Compiled> {
     /// Выполнение теста
     pub fn execute(&self, solution: &Solution, test: &str) -> ExecutedTest {
-        let (run_command, args) = self.inner.get_execute_args(solution);
+        //TODO: Возможно никогда не упадет
+        let (run_command, args) = self.inner.get_execute_args(solution).unwrap();
 
         let mut process = if let Some(ref run_command) = run_command {
             std::process::Command::new(run_command)

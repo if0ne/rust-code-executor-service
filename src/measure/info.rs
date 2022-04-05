@@ -1,6 +1,7 @@
 use crate::measure::{ProcessInfo, ProcessInformer};
 use crate::routes::execute_service::executed_test::ExecuteStatus;
-use std::io::{BufRead, BufReader};
+use crate::utils::read_from_buffer;
+use std::io::BufReader;
 use wait4::Wait4;
 
 #[allow(clippy::single_match)]
@@ -40,32 +41,8 @@ impl ProcessInformer for std::process::Child {
         let exit_status = work_result.status.code().unwrap_or(-1);
         let total_bytes = work_result.rusage.maxrss;
 
-        let stdout = stdout.lines().collect::<Vec<_>>();
-        let stderr = stderr.lines().collect::<Vec<_>>();
-
-        for line in stdout.iter() {
-            if line.is_err() {
-                return Err(ExecuteStatus::IoFail);
-            }
-        }
-
-        for line in stderr.iter() {
-            if line.is_err() {
-                return Err(ExecuteStatus::IoFail);
-            }
-        }
-
-        let stdout = stdout
-            .into_iter()
-            .map(|line| line.unwrap())
-            .collect::<Vec<_>>()
-            .join("\n");
-
-        let stderr = stderr
-            .into_iter()
-            .map(|line| line.unwrap())
-            .collect::<Vec<_>>()
-            .join("\n");
+        let stdout = read_from_buffer(stdout)?;
+        let stderr = read_from_buffer(stderr)?;
 
         Ok(ProcessInfo {
             execute_time: duration,

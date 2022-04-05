@@ -3,7 +3,6 @@ mod tests {
     use crate::routes::execute_service::executed_test::{ExecuteStatus, ExecutedResponse};
     use crate::routes::execute_service::solution::SolutionBuilder;
     use crate::{execute, SecretKey};
-    use actix_web::http::StatusCode;
     use actix_web::web::Data;
     use actix_web::{test, web, App};
 
@@ -42,7 +41,7 @@ mod tests {
             .set_json(solution)
             .to_request();
 
-        let resp = test::call_service(&app, req).await;
+        test::call_service(&app, req).await;
     }
 
     #[actix_web::test]
@@ -74,7 +73,7 @@ mod tests {
             .set_json(solution)
             .to_request();
 
-        let resp = test::call_service(&app, req).await;
+        test::call_service(&app, req).await;
     }
 
     #[actix_web::test]

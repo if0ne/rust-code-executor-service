@@ -104,13 +104,13 @@ async fn create_exec_file(
         return Err(ExecuteStatus::AlreadyTest);
     }
 
+    let file_name = executor
+        .get_source_filename_with_ext(solution)
+        .map_err(|_| ExecuteStatus::CompileFail)?;
+
     std::fs::create_dir(&folder).unwrap();
-    let mut solution_file = std::fs::File::create(format!(
-        "{}/{}",
-        folder,
-        executor.get_source_filename_with_ext(solution)
-    ))
-    .map_err(|_| ExecuteStatus::NoSpace)?;
+    let mut solution_file = std::fs::File::create(format!("{}/{}", folder, file_name))
+        .map_err(|_| ExecuteStatus::NoSpace)?;
     solution_file
         .write_all(solution.get_src().as_bytes())
         .map_err(|_| ExecuteStatus::IoFail)?;

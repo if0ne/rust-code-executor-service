@@ -11,7 +11,7 @@ pub enum DefinedLanguage {
 
 impl DefinedLanguage {
     /// Название исходного файла с кодом
-    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> String {
+    pub fn get_source_filename_with_ext(&self, solution: &Solution) -> Result<String, ()> {
         match self {
             DefinedLanguage::Compiled(exec) => exec.get_source_filename_with_ext(solution),
             DefinedLanguage::Interpreted(exec) => exec.get_source_filename_with_ext(solution),
