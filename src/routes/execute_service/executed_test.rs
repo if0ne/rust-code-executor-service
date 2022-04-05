@@ -32,9 +32,11 @@ pub struct ExecutedTest {
     /// Потребляемая память в Кб
     memory: u64,
     /// Поток вывода процесса
-    result: String,
+    stdout: String,
     /// Статус
     status: ExecuteStatus,
+    /// Поток вывода ошибок во время выполнения
+    stderr: String,
 }
 
 impl ExecutedTest {
@@ -43,8 +45,9 @@ impl ExecutedTest {
         Self {
             time: 0,
             memory: 0,
-            result: "".to_string(),
+            stdout: "".to_string(),
             status,
+            stderr: "".to_string(),
         }
     }
 }
@@ -57,13 +60,19 @@ pub struct ExecutedResponse {
     status: ExecuteStatus,
     /// Все прошедшие тесты
     tests: Vec<ExecutedTest>,
+    /// Поток вывода ошибок при компиляции
+    stderr: String,
 }
 
 #[allow(dead_code)]
 impl ExecutedResponse {
     /// Конструктор
-    pub fn new(status: ExecuteStatus, tests: Vec<ExecutedTest>) -> Self {
-        Self { status, tests }
+    pub fn new(status: ExecuteStatus, tests: Vec<ExecutedTest>, stderr: String) -> Self {
+        Self {
+            status,
+            tests,
+            stderr,
+        }
     }
 
     /// Получение статуса (для тестирования)
@@ -73,7 +82,7 @@ impl ExecutedResponse {
 
     /// Получение результатов выполнения программы
     pub fn get_raw_answers(&self) -> Vec<&str> {
-        self.tests.iter().map(|test| test.result.as_str()).collect()
+        self.tests.iter().map(|test| test.stdout.as_str()).collect()
     }
 }
 
@@ -83,12 +92,13 @@ impl From<ProcessInfo> for ExecutedTest {
         Self {
             time: process_info.execute_time.as_millis(),
             memory: process_info.total_memory / 1024,
-            result: process_info.output,
+            stdout: process_info.stdout,
             status: if process_info.exit_status == 0 {
                 ExecuteStatus::OK
             } else {
                 ExecuteStatus::RuntimeError
             },
+            stderr: process_info.stderr,
         }
     }
 }

@@ -10,7 +10,8 @@ impl ProcessInformer for std::process::Child {
         timeout: std::time::Duration,
     ) -> Result<ProcessInfo, ExecuteStatus> {
         // Буфер стандартного потока вывода
-        let output = BufReader::new(self.stdout.take().ok_or(ExecuteStatus::IoFail)?);
+        let stdout = BufReader::new(self.stdout.take().ok_or(ExecuteStatus::IoFail)?);
+        let stderr = BufReader::new(self.stderr.take().ok_or(ExecuteStatus::IoFail)?);
 
         // Получение дескриптора потока (для unix - id)
         let pid = get_pid(&self);
@@ -39,15 +40,28 @@ impl ProcessInformer for std::process::Child {
         let exit_status = work_result.status.code().unwrap_or(-1);
         let total_bytes = work_result.rusage.maxrss;
 
-        let read = output.lines().collect::<Vec<_>>();
+        let stdout = stdout.lines().collect::<Vec<_>>();
+        let stderr = stderr.lines().collect::<Vec<_>>();
 
-        for line in read.iter() {
+        for line in stdout.iter() {
             if line.is_err() {
                 return Err(ExecuteStatus::IoFail);
             }
         }
 
-        let read = read
+        for line in stderr.iter() {
+            if line.is_err() {
+                return Err(ExecuteStatus::IoFail);
+            }
+        }
+
+        let stdout = stdout
+            .into_iter()
+            .map(|line| line.unwrap())
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let stderr = stderr
             .into_iter()
             .map(|line| line.unwrap())
             .collect::<Vec<_>>()
@@ -56,8 +70,9 @@ impl ProcessInformer for std::process::Child {
         Ok(ProcessInfo {
             execute_time: duration,
             total_memory: total_bytes,
-            output: read,
+            stdout,
             exit_status,
+            stderr,
         })
     }
 }

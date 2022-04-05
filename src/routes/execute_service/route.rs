@@ -27,8 +27,12 @@ pub async fn execute(
     let result = handle_solution(&solution, pool.get_ref()).await;
 
     match result {
-        Ok(result) => web::Json(ExecutedResponse::new(ExecuteStatus::OK, result)),
-        Err(err) => web::Json(ExecutedResponse::new(err, vec![])),
+        Ok(result) => web::Json(ExecutedResponse::new(
+            ExecuteStatus::OK,
+            result,
+            "".to_string(),
+        )),
+        Err((err, stderr)) => web::Json(ExecutedResponse::new(err, vec![], stderr)),
     }
 }
 
@@ -36,19 +40,22 @@ pub async fn execute(
 async fn handle_solution(
     solution: &Solution,
     pool: &rayon::ThreadPool,
-) -> Result<Vec<ExecutedTest>, ExecuteStatus> {
+) -> Result<Vec<ExecutedTest>, (ExecuteStatus, String)> {
     // Получение языка программирования
-    let executor = define_lang(solution).map_err(|_| ExecuteStatus::UnsupportedLang)?;
+    let executor =
+        define_lang(solution).map_err(|_| (ExecuteStatus::UnsupportedLang, "".to_string()))?;
 
     // Создание файла с кодом в зависимости от выбранного языка (см. Java)
-    create_exec_file(solution, &executor).await?;
+    create_exec_file(solution, &executor)
+        .await
+        .map_err(|err| (err, "".to_string()))?;
 
     // Компиляция программы, если выбранный ЯП - то переход на стадию выполнения (Compiled)
     let executor = match executor {
         DefinedLanguage::Compiled(executor) => executor
             .compile(solution)
             .await
-            .map_err(|_| ExecuteStatus::CompileFail),
+            .map_err(|err| (ExecuteStatus::CompileFail, err)),
         DefinedLanguage::Interpreted(executor) => Ok(executor.into()),
     };
 

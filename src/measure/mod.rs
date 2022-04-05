@@ -9,9 +9,11 @@ pub struct ProcessInfo {
     /// Пик занимаемой оперативной памяти
     pub total_memory: u64,
     /// Вывод из стандартного потока вывода
-    pub output: String,
+    pub stdout: String,
     /// Возвращаемое значение процесса (если 0 - то, всё ок, иначе всё плохо)
     pub exit_status: i32,
+    /// Вывод из стандартного потока ошибок
+    pub stderr: String,
 }
 
 /// Для расширения функциональности std::process::Child

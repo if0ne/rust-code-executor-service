@@ -3,7 +3,7 @@ use crate::executors::executor_impl::ExecutorImpl;
 use crate::measure::ProcessInformer;
 use crate::routes::execute_service::executed_test::{ExecuteStatus, ExecutedTest};
 use crate::routes::execute_service::solution::Solution;
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::marker::PhantomData;
 
 /// Трейт-марка для одозначения состояние экзекьютора
@@ -56,12 +56,12 @@ impl From<Executor<Interpreted>> for Executor<Compiled> {
 
 impl Executor<Uncompiled> {
     /// Компиляция исходного кода
-    pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, ()> {
+    pub async fn compile(self, solution: &Solution) -> Result<Executor<Compiled>, String> {
         let compiler_args = self.inner.get_compiler_args(solution);
-        let status = compile_src_code(compiler_args)?;
+        let (status, stderr) = compile_src_code(compiler_args).map_err(|_| "".to_string())?;
 
         if !status.success() {
-            Err(())
+            Err(stderr)
         } else {
             Ok(Executor {
                 inner: self.inner,
@@ -74,31 +74,70 @@ impl Executor<Uncompiled> {
 /// Компиляция кода в Windows
 #[allow(clippy::needless_question_mark)]
 #[cfg(windows)]
-fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStatus, ()> {
-    Ok(std::process::Command::new(CONSOLE_CALL)
+fn compile_src_code(
+    compiler_args: Vec<String>,
+) -> Result<(std::process::ExitStatus, String), ExecuteStatus> {
+    let mut compile_process = std::process::Command::new(CONSOLE_CALL)
         .arg(CONSOLE_ARG)
         .args(compiler_args)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .spawn()
-        .map_err(|_| ())?
+        .map_err(|_| ExecuteStatus::CompileFail)?;
+    let stderr = BufReader::new(compile_process.stderr.take().ok_or(ExecuteStatus::IoFail)?);
+    let stderr = stderr.lines().collect::<Vec<_>>();
+
+    for line in stderr.iter() {
+        if line.is_err() {
+            return Err(ExecuteStatus::IoFail);
+        }
+    }
+
+    let stderr = stderr
+        .into_iter()
+        .map(|line| line.unwrap())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let status = compile_process
         .wait()
-        .map_err(|_| ())?)
+        .map_err(|_| ExecuteStatus::CompileFail)?;
+    Ok((status, stderr))
 }
 
 /// Компиляция кода в Unix
 #[allow(clippy::needless_question_mark)]
 #[cfg(not(windows))]
-fn compile_src_code(compiler_args: Vec<String>) -> Result<std::process::ExitStatus, ()> {
-    Ok(std::process::Command::new(CONSOLE_CALL)
+fn compile_src_code(
+    compiler_args: Vec<String>,
+) -> Result<(std::process::ExitStatus, String), ExecuteStatus> {
+    let mut compile_process = std::process::Command::new(CONSOLE_CALL)
         .arg(CONSOLE_ARG)
         .arg(compiler_args.join(" "))
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .spawn()
-        .map_err(|_| ())?
+        .map_err(|_| ExecuteStatus::CompileFail)?;
+
+    let stderr = BufReader::new(compile_process.stderr.take().ok_or(ExecuteStatus::IoFail)?);
+    let stderr = stderr.lines().collect::<Vec<_>>();
+
+    for line in stderr.iter() {
+        if line.is_err() {
+            return Err(ExecuteStatus::IoFail);
+        }
+    }
+
+    let stderr = stderr
+        .into_iter()
+        .map(|line| line.unwrap())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let status = compile_process
         .wait()
-        .map_err(|_| ())?)
+        .map_err(|_| ExecuteStatus::CompileFail)?;
+    Ok((status, stderr))
 }
 
 impl Executor<Compiled> {
