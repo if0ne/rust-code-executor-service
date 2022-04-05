@@ -1,12 +1,12 @@
 use crate::routes::execute_service::CodeHasher;
 use paperclip::actix::Apiv2Schema;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
 /// Решение пользователя
-#[derive(Deserialize, Apiv2Schema)]
+#[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 pub struct Solution {
     /// Выбранный язык
@@ -30,6 +30,18 @@ unsafe impl Send for Solution {}
 unsafe impl Sync for Solution {}
 
 impl Solution {
+    /// Метод для создания объекта. Используется для тестирования
+    pub fn new(lang: String, source: String, uuid: &str, timeout: u64, tests: Vec<String>) -> Self {
+        Self {
+            lang,
+            source,
+            uuid: uuid.to_string(),
+            timeout,
+            tests,
+            cache_hash: Cell::new(None),
+        }
+    }
+
     /// UUID
     pub fn get_uuid(&self) -> &str {
         &self.uuid
@@ -76,5 +88,136 @@ impl Solution {
     /// Время для таймаута в миллисекундах
     pub fn get_timeout_in_millis(&self) -> u64 {
         self.timeout
+    }
+}
+
+/// Вспомогательная структура-билдер
+pub struct SolutionBuilder {
+    /// Выбранный язык
+    lang: String,
+    /// Исходный код решения
+    source: String,
+    /// Время ожидания выполнения (в мс)
+    timeout: u64,
+    /// Эталонные решения (только входные данные)
+    tests: Vec<String>,
+}
+
+#[allow(dead_code)]
+impl SolutionBuilder {
+    /// Решение на Rust
+    pub fn make_rust() -> Self {
+        Self {
+            lang: "rust".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на Python
+    pub fn make_python() -> Self {
+        Self {
+            lang: "python".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на Java
+    pub fn make_java() -> Self {
+        Self {
+            lang: "java".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на JavaScript
+    pub fn make_js() -> Self {
+        Self {
+            lang: "js".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на C
+    pub fn make_c() -> Self {
+        Self {
+            lang: "c".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на C++
+    pub fn make_cpp() -> Self {
+        Self {
+            lang: "cpp".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Добавление исходного кода
+    pub fn add_src(mut self, src: &str) -> Self {
+        self.source = src.to_string();
+        self
+    }
+
+    /// Загрузка исходного кода
+    pub fn add_src_from_file<P: AsRef<std::path::Path>>(mut self, path: P) -> Self {
+        use std::io::Read;
+
+        let mut file =
+            std::fs::File::open(path).unwrap(/*Не наша проблема, если тесты криво написаны*/);
+        let mut src = String::new();
+        file.read_to_string(&mut src).unwrap(/*Файлы с тестами как-то поломались*/);
+
+        self.source = src;
+        self
+    }
+
+    /// Установка таймаута
+    pub fn add_timeout(mut self, timeout: u64) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    /// Добавление одного теста
+    pub fn add_test(mut self, test: &str) -> Self {
+        self.tests.push(test.to_string());
+        self
+    }
+
+    /// Добавление тестов
+    pub fn add_tests(mut self, tests: &[&str]) -> Self {
+        self.tests = tests.iter().map(|test| test.to_string()).collect();
+        self
+    }
+
+    /// Загрузка тестов из файла
+    pub fn add_tests_from_file<P: AsRef<std::path::Path>>(mut self, path: P) -> Self {
+        use std::io::Read;
+
+        let mut file =
+            std::fs::File::open(path).unwrap(/*Не наша проблема, если тесты криво написаны*/);
+        let mut tests = String::new();
+        file.read_to_string(&mut tests).unwrap(/*Файлы с тестами как-то поломались*/);
+        let tests = tests.split("&&&\r\n").collect::<Vec<_>>();
+
+        self.tests = tests.iter().map(|test| test.to_string()).collect();
+        self
+    }
+
+    /// Сборка решения
+    pub fn build(self) -> Solution {
+        Solution::new(self.lang, self.source, "0000", self.timeout, self.tests)
     }
 }
