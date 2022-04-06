@@ -19,7 +19,7 @@ use std::path::Path;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
-#[post("execute", wrap = "SecretKey")]
+#[get("execute", wrap = "SecretKey")]
 pub async fn execute(
     solution: web::Json<Solution>,
     pool: Data<rayon::ThreadPool>,
