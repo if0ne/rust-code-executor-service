@@ -10,7 +10,7 @@ use crate::routes::execute_service::executed_test::{
 use crate::routes::execute_service::solution::Solution;
 use actix_web::web::Data;
 use paperclip::actix::{
-    api_v2_operation, post,
+    api_v2_operation, get,
     web::{self},
 };
 use rayon::prelude::*;

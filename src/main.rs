@@ -31,7 +31,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
-            .allowed_methods(vec!["POST"])
+            .allowed_methods(vec!["GET"])
             .supports_credentials();
 
         let pool = Data::new(
