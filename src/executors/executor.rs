@@ -111,7 +111,8 @@ fn compile_src_code(
         .spawn()
         .map_err(|_| ExecuteStatus::CompileFail)?;
 
-    let stderr = get_stderr(&compile_process)?;
+    let stderr = BufReader::new(compile_process.stderr.take().ok_or(ExecuteStatus::IoFail)?);
+    let stderr = read_from_buffer(stderr)?;
 
     let status = compile_process
         .wait()

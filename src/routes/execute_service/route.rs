@@ -2,6 +2,7 @@ use crate::executors::defined_language::DefinedLanguage;
 use crate::executors::langs::c_exec::CExecutor;
 use crate::executors::langs::cpp_exec::CppExecutor;
 use crate::executors::langs::java_exec::JavaExecutor;
+use crate::executors::langs::pascal_exec::PascalExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
 use crate::routes::execute_service::executed_test::{
@@ -52,10 +53,7 @@ async fn handle_solution(
 
     // Компиляция программы, если выбранный ЯП - то переход на стадию выполнения (Compiled)
     let executor = match executor {
-        DefinedLanguage::Compiled(executor) => executor
-            .compile(solution)
-            .await
-            .map_err(|err| (ExecuteStatus::CompileFail, err)),
+        DefinedLanguage::Compiled(executor) => executor.compile(solution).await.map_err(|err| (ExecuteStatus::CompileFail, err)),
         DefinedLanguage::Interpreted(executor) => Ok(executor.into()),
     };
 
@@ -88,6 +86,7 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
         "java" => Ok(JavaExecutor.into()),
         "c" => Ok(CExecutor.into()),
         "cpp" => Ok(CppExecutor.into()),
+        "pascal" => Ok(PascalExecutor.into()),
         _ => Err(()),
     }
 }
