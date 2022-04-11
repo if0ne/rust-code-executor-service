@@ -2,9 +2,9 @@ use crate::executors::defined_language::DefinedLanguage;
 use crate::executors::langs::c_exec::CExecutor;
 use crate::executors::langs::cpp_exec::CppExecutor;
 use crate::executors::langs::java_exec::JavaExecutor;
+use crate::executors::langs::js_exec::JsExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
-use crate::executors::langs::js_exec::JsExecutor;
 use crate::routes::execute_service::executed_test::{
     ExecuteStatus, ExecutedResponse, ExecutedTest,
 };

@@ -7,7 +7,6 @@ pub const INTERPRETER_NAME: &str = "node";
 #[cfg(not(windows))]
 pub const INTERPRETER_NAME: &str = "nodejs";
 
-
 pub struct JsExecutor;
 
 impl ExecutorImpl for JsExecutor {
