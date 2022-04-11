@@ -2,16 +2,21 @@ use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_interpreter;
 use crate::routes::execute_service::solution::Solution;
 
-pub struct PythonExecutor;
+#[cfg(windows)]
+pub const INTERPRETER_NAME: &str = "node";
+#[cfg(not(windows))]
+pub const INTERPRETER_NAME: &str = "nodejs";
 
-impl ExecutorImpl for PythonExecutor {
+pub struct JsExecutor;
+
+impl ExecutorImpl for JsExecutor {
     fn get_compiler_args(&self, _: &Solution) -> Result<Vec<String>, ()> {
         panic!("Program invariant is broken")
     }
 
     fn get_execute_args(&self, solution: &Solution) -> Result<(RunCommand, Vec<String>), ()> {
         Ok((
-            Some("python".to_string()),
+            Some(INTERPRETER_NAME.to_string()),
             vec![format!(
                 "{}{}",
                 solution.get_folder_name(),
@@ -24,9 +29,9 @@ impl ExecutorImpl for PythonExecutor {
         Ok(format!(
             "{}{}",
             self.get_source_filename(solution).unwrap(/*Всегда успешно*/),
-            ".py"
+            ".js"
         ))
     }
 }
 
-make_interpreter!(PythonExecutor);
+make_interpreter!(JsExecutor);
