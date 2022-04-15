@@ -1,22 +1,13 @@
+use crate::routes::execute_service::executed_test::ExecuteStatus;
+
 pub fn read_from_buffer<T: std::io::Read>(
-    buffer: std::io::BufReader<T>,
+    mut buffer: std::io::BufReader<T>,
 ) -> Result<String, crate::routes::execute_service::executed_test::ExecuteStatus> {
-    use crate::routes::execute_service::executed_test::ExecuteStatus;
-    use std::io::BufRead;
+    use std::io::Read;
 
-    let buffer = buffer.lines().collect::<Vec<_>>();
+    let mut out = Vec::new();
+    buffer.read_to_end(&mut out).map_err(|_| ExecuteStatus::IoFail)?;
+    let result = String::from_utf8_lossy(&out).to_string();
 
-    for line in buffer.iter() {
-        if line.is_err() {
-            return Err(ExecuteStatus::IoFail);
-        }
-    }
-
-    let buffer = buffer
-        .into_iter()
-        .map(|line| line.unwrap())
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    Ok(buffer)
+    Ok(result)
 }

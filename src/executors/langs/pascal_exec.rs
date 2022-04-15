@@ -4,9 +4,9 @@ use crate::make_compiler;
 use crate::routes::execute_service::solution::Solution;
 
 #[cfg(windows)]
-pub const COMPILER_NAME: &str = "pabcnetc";
+pub const COMPILER_NAME: &str = "pabcnetcclear";
 #[cfg(not(windows))]
-pub const COMPILER_NAME: &str = "pabcnetc";
+pub const COMPILER_NAME: &str = "mono /opt/pabcnetc/pabcnetcclear.exe";
 
 pub struct PascalExecutor;
 
@@ -25,7 +25,7 @@ impl ExecutorImpl for PascalExecutor {
 
     fn get_execute_args(&self, solution: &Solution) -> Result<(RunCommand, Vec<String>), ()> {
         Ok((
-            None,
+            Some("mono".to_string()),
             vec![
                 solution.get_folder_name(),
                 self.get_source_filename(solution).unwrap(),
