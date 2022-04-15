@@ -131,7 +131,7 @@ impl Executor<Compiled> {
         } else {
             std::process::Command::new(args.join(""))
         };
-
+        println!("{}", args.join(""));
         let process = if run_command.is_some() {
             process.args(args)
         } else {
