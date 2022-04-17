@@ -53,7 +53,10 @@ async fn handle_solution(
 
     // Компиляция программы, если выбранный ЯП - то переход на стадию выполнения (Compiled)
     let executor = match executor {
-        DefinedLanguage::Compiled(executor) => executor.compile(solution).await.map_err(|err| (ExecuteStatus::CompileFail, err)),
+        DefinedLanguage::Compiled(executor) => executor
+            .compile(solution)
+            .await
+            .map_err(|err| (ExecuteStatus::CompileFail, err)),
         DefinedLanguage::Interpreted(executor) => Ok(executor.into()),
     };
 

@@ -36,7 +36,7 @@ mod tests {
 
         let solution = SolutionBuilder::make_rust().build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .set_json(solution)
             .to_request();
@@ -67,7 +67,7 @@ mod tests {
 
         let solution = SolutionBuilder::make_rust().build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(("x-api-key", "Wrong Key"))
             .set_json(solution)
@@ -102,15 +102,18 @@ mod tests {
             .add_timeout(1000)
             .build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
             .set_json(solution)
             .to_request();
-
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -144,7 +147,7 @@ mod tests {
             .add_timeout(1000)
             .build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
             .set_json(solution)
@@ -152,7 +155,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -186,7 +193,7 @@ mod tests {
             .add_timeout(1000)
             .build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
             .set_json(solution)
@@ -194,7 +201,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -228,7 +239,7 @@ mod tests {
             .add_timeout(1000)
             .build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
             .set_json(solution)
@@ -236,7 +247,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -270,7 +285,7 @@ mod tests {
             .add_timeout(1000)
             .build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
             .set_json(solution)
@@ -278,7 +293,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -312,7 +331,7 @@ mod tests {
             .add_timeout(1000)
             .build();
 
-        let req = test::TestRequest::post()
+        let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
             .set_json(solution)
@@ -320,7 +339,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");

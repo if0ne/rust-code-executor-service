@@ -1,8 +1,7 @@
-use crate::executors::consts::{OS_PATH_PREFIX};
+use crate::executors::consts::OS_PATH_PREFIX;
 use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
 use crate::routes::execute_service::solution::Solution;
-use std::option::Option::None;
 
 #[cfg(windows)]
 pub const COMPILER_NAME: &str = "pabcnetcclear";
@@ -13,8 +12,6 @@ pub const COMPILER_NAME: &str = "mono /opt/pabcnetc/pabcnetcclear.exe";
 pub const EXECUTOR: Option<&str> = None;
 #[cfg(not(windows))]
 pub const EXECUTOR: Option<&str> = Some("mono");
-
-
 
 pub struct PascalExecutor;
 
@@ -47,9 +44,7 @@ impl ExecutorImpl for PascalExecutor {
         path.push(self.get_source_filename(solution).unwrap() + ".exe");
         Ok((
             EXECUTOR.map(|e| e.to_string()),
-            vec![
-                path.to_str().unwrap().to_string()
-            ],
+            vec![path.to_str().unwrap().to_string()],
         ))
     }
 
