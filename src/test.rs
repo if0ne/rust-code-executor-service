@@ -107,10 +107,13 @@ mod tests {
             .append_header(X_API_KEY)
             .set_json(solution)
             .to_request();
-
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -152,7 +155,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -194,7 +201,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -236,7 +247,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -278,7 +293,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");
@@ -320,7 +339,11 @@ mod tests {
 
         let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
         assert_eq!(*resp.get_status(), ExecuteStatus::OK);
-        let answers = resp.get_raw_answers();
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
         assert_eq!(answers[0], "2");
         assert_eq!(answers[1], "11");
         assert_eq!(answers[2], "200");

@@ -27,6 +27,13 @@ RUN apk add rust
 RUN apk add openjdk17
 RUN apk add python3
 RUN apk add nodejs
+RUN apk add zlib
+RUN apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
+RUN apk add unzip
+RUN apk add wget
+RUN wget http://pascalabc.net/downloads/PABCNETC.zip -O /tmp/PABCNETC.zip &&\
+    mkdir /opt/pabcnetc &&\
+    unzip /tmp/PABCNETC.zip -d /opt/pabcnetc
 
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/rust-code-executor-service /usr/src/app/
 

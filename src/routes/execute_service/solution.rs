@@ -2,8 +2,10 @@ use crate::routes::execute_service::CodeHasher;
 use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
+use std::fs::canonicalize;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
+use std::path::PathBuf;
 
 /// Решение пользователя
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
@@ -83,6 +85,11 @@ impl Solution {
             self.get_uuid(),
             self.get_hash(PhantomData::<CodeHasher>)
         )
+    }
+
+    #[allow(dead_code)]
+    pub fn get_full_folder_path(&self) -> PathBuf {
+        canonicalize(self.get_folder_name()).unwrap()
     }
 
     /// Время для таймаута в миллисекундах
