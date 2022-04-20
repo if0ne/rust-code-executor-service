@@ -5,7 +5,7 @@ use crate::routes::execute_service::solution::Solution;
 #[cfg(windows)]
 pub const INTERPRETER_NAME: &str = "node";
 #[cfg(not(windows))]
-pub const INTERPRETER_NAME: &str = "nodejs";
+pub const INTERPRETER_NAME: &str = "node";
 
 pub struct JsExecutor;
 

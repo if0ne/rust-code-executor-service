@@ -31,9 +31,13 @@ RUN apk add zlib
 RUN apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
 RUN apk add unzip
 RUN apk add wget
+RUN apk add bash
 RUN wget http://pascalabc.net/downloads/PABCNETC.zip -O /tmp/PABCNETC.zip &&\
     mkdir /opt/pabcnetc &&\
     unzip /tmp/PABCNETC.zip -d /opt/pabcnetc
+
+RUN wget https://github.com/JetBrains/kotlin/releases/download/v1.6.21/kotlin-compiler-1.6.21.zip -O /tmp/KOTLINC.zip &&\
+    unzip /tmp/KOTLINC.zip -d /opt/
 
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/rust-code-executor-service /usr/src/app/
 

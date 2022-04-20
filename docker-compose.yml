@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  code-executor-service:
+    container_name: code-executor-service
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - RUST_SERVICE_PORT=${RUST_SERVICE_PORT}
+      - RUST_SERVICE_HOST=${RUST_SERVICE_HOST}
+      - SECRET_KEY=${SECRET_KEY}
