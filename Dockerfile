@@ -1,8 +1,8 @@
 FROM ghcr.io/rust-lang/rust:nightly-alpine AS chef
 WORKDIR /app
 RUN apk upgrade
-RUN apk add musl-dev
-RUN cargo install cargo-chef
+RUN apk add musl-dev=1.2.2-r7
+RUN cargo install --version 0.1.35 cargo-chef
 
 FROM chef AS planner
 COPY . .
@@ -18,20 +18,23 @@ RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path r
 COPY . .
 RUN cargo +nightly build --release --target x86_64-unknown-linux-musl
 
-
 FROM alpine AS Runner
 
 WORKDIR /usr/src/app
 
-RUN apk add rust
-RUN apk add openjdk17
-RUN apk add python3
-RUN apk add nodejs
-RUN apk add zlib
-RUN apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
-RUN apk add unzip
-RUN apk add wget
-RUN apk add bash
+RUN apk add rust=1.56.1-r0
+RUN apk add openjdk17=17.0.2_p8-r0
+RUN apk add python3=3.9.7-r4
+RUN apk add nodejs=16.14.2-r0
+RUN apk add zlib=1.2.12-r0
+RUN apk add --no-cache mono=6.12.0.122-r1 --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
+RUN apk add unzip=6.0-r9
+RUN apk add wget=1.21.2-r2
+RUN apk add bash=5.1.16-r0
+#############################################################################
+#It is not possible to specify the version for the pascal compiler, or the  #
+#possibility was not found.                                                 #
+#############################################################################
 RUN wget http://pascalabc.net/downloads/PABCNETC.zip -O /tmp/PABCNETC.zip &&\
     mkdir /opt/pabcnetc &&\
     unzip /tmp/PABCNETC.zip -d /opt/pabcnetc
