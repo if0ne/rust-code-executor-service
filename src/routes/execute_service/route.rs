@@ -3,6 +3,7 @@ use crate::executors::langs::c_exec::CExecutor;
 use crate::executors::langs::cpp_exec::CppExecutor;
 use crate::executors::langs::java_exec::JavaExecutor;
 use crate::executors::langs::js_exec::JsExecutor;
+use crate::executors::langs::kotlin_exec::KotlinExecutor;
 use crate::executors::langs::pascal_exec::PascalExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
@@ -92,6 +93,7 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
         "cpp" => Ok(CppExecutor.into()),
         "pascal" => Ok(PascalExecutor.into()),
         "js" => Ok(JsExecutor.into()),
+        "kotlin" => Ok(KotlinExecutor.into()),
         _ => Err(()),
     }
 }
