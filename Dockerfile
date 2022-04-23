@@ -23,7 +23,7 @@ FROM alpine AS Runner
 WORKDIR /usr/src/app
 
 RUN apk add rust=1.56.1-r0
-RUN apk add openjdk17=17.0.2_p8-r0
+RUN apk add openjdk17=17.0.3_p7-r0
 RUN apk add python3=3.9.7-r4
 RUN apk add nodejs=16.14.2-r0
 RUN apk add zlib=1.2.12-r0

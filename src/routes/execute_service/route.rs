@@ -19,6 +19,7 @@ use paperclip::actix::{
 use rayon::prelude::*;
 use std::io::Write;
 use std::path::Path;
+use crate::executors::langs::csharp_exec::CsharpExecutor;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
@@ -94,6 +95,7 @@ fn define_lang(solution: &Solution) -> Result<DefinedLanguage, ()> {
         "pascal" => Ok(PascalExecutor.into()),
         "js" => Ok(JsExecutor.into()),
         "kotlin" => Ok(KotlinExecutor.into()),
+        "csharp" => Ok(CsharpExecutor.into()),
         _ => Err(()),
     }
 }
