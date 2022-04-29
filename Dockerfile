@@ -1,4 +1,4 @@
-FROM ghcr.io/rust-lang/rust:nightly-alpine AS chef
+FROM ghcr.io/rust-lang/rust:nightly-alpine3.15 AS chef
 WORKDIR /app
 RUN apk upgrade
 RUN apk add musl-dev=1.2.2-r7
@@ -18,7 +18,7 @@ RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path r
 COPY . .
 RUN cargo +nightly build --release --target x86_64-unknown-linux-musl
 
-FROM alpine AS Runner
+FROM alpine:3.15 AS Runner
 
 WORKDIR /usr/src/app
 
@@ -31,6 +31,7 @@ RUN apk add --no-cache mono=6.12.0.122-r1 --repository http://dl-cdn.alpinelinux
 RUN apk add unzip=6.0-r9
 RUN apk add wget=1.21.2-r2
 RUN apk add bash=5.1.16-r0
+RUN apk add build-base=0.5-r2
 #############################################################################
 #It is not possible to specify the version for the pascal compiler, or the  #
 #possibility was not found.                                                 #
