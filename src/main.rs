@@ -1,5 +1,6 @@
 #![warn(clippy::all)]
 #![warn(rust_2018_idioms)]
+#![allow(stable_features)]
 #![feature(thread_is_running)]
 mod executors;
 mod measure;
