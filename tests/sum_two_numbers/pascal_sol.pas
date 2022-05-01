@@ -1,6 +1,6 @@
 program Hello;
 var
-    a, b: Cardinal;
+    a, b: Longint;
 begin
   readln(a);
   readln(b);
