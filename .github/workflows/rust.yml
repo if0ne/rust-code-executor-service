@@ -17,7 +17,7 @@ jobs:
             toolchain: nightly
             override: true
       -
-      name: Check build
+        name: Check build
         uses: actions-rs/cargo@v1
         with:
           command: check
@@ -37,7 +37,7 @@ jobs:
             override: true
             components: rustfmt, clippy
       -
-      name: Annotate commit with clippy warnings
+        name: Annotate commit with clippy warnings
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
