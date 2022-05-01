@@ -31,9 +31,9 @@ impl ExecutorImpl for JavaExecutor {
     }
 
     fn get_source_filename(&self, solution: &Solution) -> Result<String, ()> {
-        let regex = Regex::new(r"public class (?P<class>.*) \{[\s\S]*public static void main").unwrap(/*Регулярка правильная*/);
+        let regex = Regex::new(r"public class (?P<class>.*) *\{[\s\S]*public static void main").unwrap(/*Регулярка правильная*/);
         let capture = regex.captures(solution.get_src()).ok_or(())?;
-        Ok(capture.get(1).map(|m| m.as_str()).ok_or(())?.to_string())
+        Ok(capture.get(1).map(|m| m.as_str()).ok_or(())?.trim().to_string())
     }
 
     fn get_source_filename_with_ext(&self, solution: &Solution) -> Result<String, ()> {

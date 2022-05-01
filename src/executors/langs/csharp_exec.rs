@@ -20,7 +20,7 @@ impl ExecutorImpl for CsharpExecutor {
                 "-out:{}{}/{}",
                 OS_PATH_PREFIX,
                 solution.get_folder_name(),
-                COMPILED_FILE_NAME.to_string(),
+                COMPILED_FILE_NAME,
             ),
             format!(
                 "{}{}/{}",
@@ -38,7 +38,7 @@ impl ExecutorImpl for CsharpExecutor {
                 format!(
                     "{}{}",
                     solution.get_folder_name(),
-                    COMPILED_FILE_NAME.to_string(),
+                    COMPILED_FILE_NAME,
                 ),
             ],
         ))

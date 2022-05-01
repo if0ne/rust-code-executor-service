@@ -192,7 +192,7 @@ mod tests {
             .add_tests_from_file("tests/sum_two_numbers/input.txt")
             .add_timeout(1000)
             .build();
-
+        println!("{:?}", solution);
         let req = test::TestRequest::get()
             .uri(EXECUTE_ENDPOINT)
             .append_header(X_API_KEY)
