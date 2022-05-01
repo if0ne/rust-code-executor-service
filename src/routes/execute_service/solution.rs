@@ -7,6 +7,11 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::path::PathBuf;
 
+#[cfg(windows)]
+pub const SPLITTER: &str = "&&&\r\n";
+#[cfg(not(windows))]
+pub const SPLITTER: &str = "&&&\n";
+
 /// Решение пользователя
 #[derive(Debug, Serialize, Deserialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
@@ -217,7 +222,7 @@ impl SolutionBuilder {
             std::fs::File::open(path).unwrap(/*Не наша проблема, если тесты криво написаны*/);
         let mut tests = String::new();
         file.read_to_string(&mut tests).unwrap(/*Файлы с тестами как-то поломались*/);
-        let tests = tests.split("&&&\r\n").collect::<Vec<_>>();
+        let tests = tests.split(SPLITTER).collect::<Vec<_>>();
 
         self.tests = tests.iter().map(|test| test.to_string()).collect();
         self
