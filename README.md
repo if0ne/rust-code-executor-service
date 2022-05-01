@@ -1,13 +1,7 @@
-<h1 style="text-align: center;">&#9881; Code Executor Service</h1>
+<h1 align="center">&#9881; Code Executor Service</h1>
+<h2 align="center"><b>Сервис для удаленного запуска кода</b></h2>
 
----
-
-<p style="text-align: center;"><b>Сервис для удаленного запуска кода</b></p>
-
----
-
-
-###Поддерживаемые языки
+### Поддерживаемые языки
 - C
 - C++
 - Java
