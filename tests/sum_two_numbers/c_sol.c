@@ -6,7 +6,7 @@ int main()
     unsigned long long b = 0;
     scanf("%lld", &a);
     scanf("%lld", &b);
-    printf("%lld", a + b);
+    printf("%lld\n", a + b);
 
     return 0;
 }

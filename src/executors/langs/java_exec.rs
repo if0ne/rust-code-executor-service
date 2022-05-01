@@ -47,6 +47,7 @@ impl ExecutorImpl for JavaExecutor {
 
 make_compiler!(JavaExecutor);
 
+#[allow(unused_imports)]
 mod tests {
     use crate::executors::executor_impl::ExecutorImpl;
     use crate::executors::langs::java_exec::JavaExecutor;

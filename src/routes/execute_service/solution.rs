@@ -177,6 +177,36 @@ impl SolutionBuilder {
         }
     }
 
+    /// Решение на C#
+    pub fn make_csharp() -> Self {
+        Self {
+            lang: "csharp".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на Kotlin
+    pub fn make_kotlin() -> Self {
+        Self {
+            lang: "kotlin".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
+    /// Решение на Pascal
+    pub fn make_pascal() -> Self {
+        Self {
+            lang: "pascal".to_string(),
+            source: "".to_string(),
+            timeout: 0,
+            tests: vec![],
+        }
+    }
+
     /// Добавление исходного кода
     pub fn add_src(mut self, src: &str) -> Self {
         self.source = src.to_string();

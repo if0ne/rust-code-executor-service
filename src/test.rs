@@ -350,4 +350,142 @@ mod tests {
         assert_eq!(answers[3], "1024");
         assert_eq!(answers[4], "2222222211");
     }
+
+    #[actix_web::test]
+    async fn test_csharp_sum_two_numbers() {
+        dotenv::dotenv().ok();
+        let pool = Data::new(
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(4)
+                .build()
+                .unwrap(),
+        );
+
+        let app = test::init_service(
+            App::new().service(
+                web::scope("/api")
+                    .wrap(SecretKey)
+                    .app_data(pool)
+                    .service(execute),
+            ),
+        )
+            .await;
+
+        let solution = SolutionBuilder::make_csharp()
+            .add_src_from_file("tests/sum_two_numbers/csharp_sol.cs")
+            .add_tests_from_file("tests/sum_two_numbers/input.txt")
+            .add_timeout(1000)
+            .build();
+
+        let req = test::TestRequest::get()
+            .uri(EXECUTE_ENDPOINT)
+            .append_header(X_API_KEY)
+            .set_json(solution)
+            .to_request();
+
+        let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
+        assert_eq!(*resp.get_status(), ExecuteStatus::OK);
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
+        assert_eq!(answers[0], "2");
+        assert_eq!(answers[1], "11");
+        assert_eq!(answers[2], "200");
+        assert_eq!(answers[3], "1024");
+        assert_eq!(answers[4], "2222222211");
+    }
+
+    #[actix_web::test]
+    async fn test_kotlin_sum_two_numbers() {
+        dotenv::dotenv().ok();
+        let pool = Data::new(
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(4)
+                .build()
+                .unwrap(),
+        );
+
+        let app = test::init_service(
+            App::new().service(
+                web::scope("/api")
+                    .wrap(SecretKey)
+                    .app_data(pool)
+                    .service(execute),
+            ),
+        )
+            .await;
+
+        let solution = SolutionBuilder::make_kotlin()
+            .add_src_from_file("tests/sum_two_numbers/kotlin_sol.kt")
+            .add_tests_from_file("tests/sum_two_numbers/input.txt")
+            .add_timeout(1000)
+            .build();
+
+        let req = test::TestRequest::get()
+            .uri(EXECUTE_ENDPOINT)
+            .append_header(X_API_KEY)
+            .set_json(solution)
+            .to_request();
+
+        let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
+        assert_eq!(*resp.get_status(), ExecuteStatus::OK);
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
+        assert_eq!(answers[0], "2");
+        assert_eq!(answers[1], "11");
+        assert_eq!(answers[2], "200");
+        assert_eq!(answers[3], "1024");
+        assert_eq!(answers[4], "2222222211");
+    }
+
+    #[actix_web::test]
+    async fn test_pascal_sum_two_numbers() {
+        dotenv::dotenv().ok();
+        let pool = Data::new(
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(4)
+                .build()
+                .unwrap(),
+        );
+
+        let app = test::init_service(
+            App::new().service(
+                web::scope("/api")
+                    .wrap(SecretKey)
+                    .app_data(pool)
+                    .service(execute),
+            ),
+        )
+            .await;
+
+        let solution = SolutionBuilder::make_pascal()
+            .add_src_from_file("tests/sum_two_numbers/pascal_sol.pas")
+            .add_tests_from_file("tests/sum_two_numbers/input.txt")
+            .add_timeout(1000)
+            .build();
+
+        let req = test::TestRequest::get()
+            .uri(EXECUTE_ENDPOINT)
+            .append_header(X_API_KEY)
+            .set_json(solution)
+            .to_request();
+
+        let resp: ExecutedResponse = test::call_and_read_body_json(&app, req).await;
+        assert_eq!(*resp.get_status(), ExecuteStatus::OK);
+        let answers = resp
+            .get_raw_answers()
+            .iter()
+            .map(|test| test.trim())
+            .collect::<Vec<_>>();
+        assert_eq!(answers[0], "2");
+        assert_eq!(answers[1], "11");
+        assert_eq!(answers[2], "200");
+        assert_eq!(answers[3], "1024");
+        assert_eq!(answers[4], "2222222211");
+    }
 }
