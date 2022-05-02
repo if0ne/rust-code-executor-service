@@ -20,7 +20,7 @@ pub const SPLITTER: &str = "&&&\n";
 #[serde(rename_all = "camelCase")]
 pub struct Solution {
     /// Выбранный язык
-    /// Возможные варианты: rust, python, c, cpp, java, js
+    /// Возможные варианты: rust, python, c, cpp, java, js, pascal, csharp, kotlin
     lang: String,
     /// Исходный код решения
     source: String,

@@ -1,8 +1,8 @@
 use crate::executors::consts::OS_PATH_PREFIX;
 use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
-use regex::Regex;
 use crate::models::solution::Solution;
+use regex::Regex;
 
 pub struct JavaExecutor;
 

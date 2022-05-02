@@ -8,22 +8,20 @@ use crate::executors::langs::kotlin_exec::KotlinExecutor;
 use crate::executors::langs::pascal_exec::PascalExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
+use crate::models::executed_test::{ExecuteStatus, ExecutedResponse, ExecutedTest};
+use crate::models::solution::Solution;
 use actix_web::web::Data;
 use paperclip::actix::{
     api_v2_operation, get,
     web::{self},
 };
 use rayon::prelude::*;
-use crate::models::executed_test::{
-    ExecuteStatus, ExecutedResponse, ExecutedTest,
-};
-use crate::models::solution::Solution;
 use std::io::Write;
 use std::path::Path;
 
 /// Проверка решения пользователя
 #[api_v2_operation]
-#[get("execute", wrap = "SecretKey")]
+#[get("/execute", wrap = "SecretKey")]
 pub async fn execute(
     solution: web::Json<Solution>,
     pool: Data<rayon::ThreadPool>,

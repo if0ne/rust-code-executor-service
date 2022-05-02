@@ -4,10 +4,10 @@
 #![feature(thread_is_running)]
 mod executors;
 mod measure;
+mod models;
 mod routes;
 mod test;
 mod utils;
-mod models;
 
 use crate::routes::secret_key::SecretKey;
 use actix_cors::Cors;
@@ -15,13 +15,15 @@ use actix_web::middleware::Logger;
 use actix_web::web::Data;
 use actix_web::{App, HttpServer};
 use paperclip::actix::{web, OpenApiExt};
+use routes::alive_service::route::alive;
 use routes::execute_service::route::execute;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    //TODO: Настроить логгер по-нормальному
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
+
     dotenv::dotenv().ok();
+
     let port = std::env::var("RUST_SERVICE_PORT")
         .unwrap()
         .parse::<u16>()
@@ -47,6 +49,10 @@ async fn main() -> std::io::Result<()> {
             .wrap_api()
             .wrap(Logger::new("Endpoint: %r Code: %s Size: %b bytes Time: %D ms Date: %t Address: %a Browser: %{User-Agent}i"))
             .wrap(cors)
+            .service(
+                web::scope("/api")
+                    .service(alive),
+            )
             .service(
                 web::scope("/api")
                     .wrap(SecretKey)
