@@ -1,6 +1,6 @@
 use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_interpreter;
-use crate::routes::execute_service::solution::Solution;
+use crate::models::solution::Solution;
 
 #[cfg(windows)]
 pub const INTERPRETER_NAME: &str = "node";

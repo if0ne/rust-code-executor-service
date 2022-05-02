@@ -1,25 +1,25 @@
 use crate::executors::defined_language::DefinedLanguage;
 use crate::executors::langs::c_exec::CExecutor;
 use crate::executors::langs::cpp_exec::CppExecutor;
+use crate::executors::langs::csharp_exec::CsharpExecutor;
 use crate::executors::langs::java_exec::JavaExecutor;
 use crate::executors::langs::js_exec::JsExecutor;
 use crate::executors::langs::kotlin_exec::KotlinExecutor;
 use crate::executors::langs::pascal_exec::PascalExecutor;
 use crate::executors::langs::python_exec::PythonExecutor;
 use crate::executors::langs::rust_exec::RustExecutor;
-use crate::routes::execute_service::executed_test::{
-    ExecuteStatus, ExecutedResponse, ExecutedTest,
-};
-use crate::routes::execute_service::solution::Solution;
 use actix_web::web::Data;
 use paperclip::actix::{
     api_v2_operation, get,
     web::{self},
 };
 use rayon::prelude::*;
+use crate::models::executed_test::{
+    ExecuteStatus, ExecutedResponse, ExecutedTest,
+};
+use crate::models::solution::Solution;
 use std::io::Write;
 use std::path::Path;
-use crate::executors::langs::csharp_exec::CsharpExecutor;
 
 /// Проверка решения пользователя
 #[api_v2_operation]

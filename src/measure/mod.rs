@@ -1,4 +1,4 @@
-use crate::routes::execute_service::executed_test::ExecuteStatus;
+use crate::models::executed_test::ExecuteStatus;
 use std::time::Duration;
 
 /// Информация о запускаемом процессе

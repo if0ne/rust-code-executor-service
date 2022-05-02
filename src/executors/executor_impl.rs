@@ -1,5 +1,5 @@
 use crate::executors::consts::{COMPILED_FILE_NAME, SOURCE_FILE_NAME};
-use crate::routes::execute_service::solution::Solution;
+use crate::models::solution::Solution;
 
 /// Команда запуска (для интерпретируемых языков)
 pub type RunCommand = Option<String>;

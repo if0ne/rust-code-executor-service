@@ -1,4 +1,4 @@
-use crate::routes::execute_service::CodeHasher;
+use ahash::AHasher;
 use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
@@ -6,6 +6,9 @@ use std::fs::canonicalize;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::path::PathBuf;
+
+/// Хешер
+pub type CodeHasher = AHasher;
 
 #[cfg(windows)]
 pub const SPLITTER: &str = "&&&\r\n";
@@ -104,6 +107,7 @@ impl Solution {
 }
 
 /// Вспомогательная структура-билдер
+#[derive(Clone)]
 pub struct SolutionBuilder {
     /// Выбранный язык
     lang: String,
@@ -261,5 +265,10 @@ impl SolutionBuilder {
     /// Сборка решения
     pub fn build(self) -> Solution {
         Solution::new(self.lang, self.source, "0000", self.timeout, self.tests)
+    }
+
+    /// Сборка решения с uuid
+    pub fn build_with_uuid(self, uuid: &str) -> Solution {
+        Solution::new(self.lang, self.source, uuid, self.timeout, self.tests)
     }
 }

@@ -1,7 +1,7 @@
 use crate::executors::consts::{COMPILED_FILE_NAME, OS_PATH_PREFIX};
 use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
-use crate::routes::execute_service::solution::Solution;
+use crate::models::solution::Solution;
 
 pub const COMPILER_NAME: &str = "dmcs";
 
@@ -34,13 +34,11 @@ impl ExecutorImpl for CsharpExecutor {
     fn get_execute_args(&self, solution: &Solution) -> Result<(RunCommand, Vec<String>), ()> {
         Ok((
             EXECUTOR.map(|e| e.to_string()),
-            vec![
-                format!(
-                    "{}{}",
-                    solution.get_folder_name(),
-                    COMPILED_FILE_NAME,
-                ),
-            ],
+            vec![format!(
+                "{}{}",
+                solution.get_folder_name(),
+                COMPILED_FILE_NAME,
+            )],
         ))
     }
 
@@ -54,4 +52,3 @@ impl ExecutorImpl for CsharpExecutor {
 }
 
 make_compiler!(CsharpExecutor);
-

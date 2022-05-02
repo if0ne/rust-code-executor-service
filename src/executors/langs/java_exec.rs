@@ -1,8 +1,8 @@
 use crate::executors::consts::OS_PATH_PREFIX;
 use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
-use crate::routes::execute_service::solution::Solution;
 use regex::Regex;
+use crate::models::solution::Solution;
 
 pub struct JavaExecutor;
 
@@ -33,7 +33,12 @@ impl ExecutorImpl for JavaExecutor {
     fn get_source_filename(&self, solution: &Solution) -> Result<String, ()> {
         let regex = Regex::new(r"public class (?P<class>.*) \{[\s\S]*public static void main").unwrap(/*Регулярка правильная*/);
         let capture = regex.captures(solution.get_src()).ok_or(())?;
-        Ok(capture.name("class").map(|m| m.as_str()).ok_or(())?.trim().to_string())
+        Ok(capture
+            .name("class")
+            .map(|m| m.as_str())
+            .ok_or(())?
+            .trim()
+            .to_string())
     }
 
     fn get_source_filename_with_ext(&self, solution: &Solution) -> Result<String, ()> {
@@ -51,7 +56,7 @@ make_compiler!(JavaExecutor);
 mod tests {
     use crate::executors::executor_impl::ExecutorImpl;
     use crate::executors::langs::java_exec::JavaExecutor;
-    use crate::routes::execute_service::solution::SolutionBuilder;
+    use crate::models::solution::SolutionBuilder;
 
     #[test]
     fn parse_class_name() {
@@ -59,7 +64,6 @@ mod tests {
         let sol = SolutionBuilder::make_java()
             .add_src("import java.util.Scanner;\n\npublic class Main {\n\tpublic static void main(String[] args) {\n\t    Scanner scanner = new Scanner(System.in);\n\t    long a = scanner.nextInt();\n\t    long b = scanner.nextInt();\n\t\tSystem.out.println(a + b);\n\t}\n}")
             .build();
-
 
         assert_eq!(java_exec.get_source_filename(&sol), Ok("Main".to_string()));
     }

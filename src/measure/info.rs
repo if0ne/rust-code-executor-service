@@ -1,5 +1,5 @@
 use crate::measure::{ProcessInfo, ProcessInformer};
-use crate::routes::execute_service::executed_test::ExecuteStatus;
+use crate::models::executed_test::ExecuteStatus;
 use crate::utils::read_from_buffer;
 use std::io::BufReader;
 use wait4::Wait4;
