@@ -5,7 +5,7 @@ use paperclip::actix::{
 
 /// Проверка работоспособности сервиса
 #[api_v2_operation]
-#[get("/alive")]
+#[get("/api/alive")]
 pub async fn alive() -> impl Responder {
     HttpResponse::Ok()
 }

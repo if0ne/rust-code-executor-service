@@ -49,10 +49,7 @@ async fn main() -> std::io::Result<()> {
             .wrap_api()
             .wrap(Logger::new("Endpoint: %r Code: %s Size: %b bytes Time: %D ms Date: %t Address: %a Browser: %{User-Agent}i"))
             .wrap(cors)
-            .service(
-                web::scope("/api")
-                    .service(alive),
-            )
+            .service(alive)
             .service(
                 web::scope("/api")
                     .wrap(SecretKey)
