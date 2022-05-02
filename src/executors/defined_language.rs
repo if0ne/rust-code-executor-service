@@ -1,5 +1,5 @@
 use crate::executors::executor::{Executor, Interpreted, Uncompiled};
-use crate::routes::execute_service::solution::Solution;
+use crate::models::solution::Solution;
 
 /// Определенный язык программирования
 pub enum DefinedLanguage {

@@ -1,8 +1,8 @@
-use crate::routes::execute_service::executed_test::ExecuteStatus;
+use crate::models::executed_test::ExecuteStatus;
 
 pub fn read_from_buffer<T: std::io::Read>(
     mut buffer: std::io::BufReader<T>,
-) -> Result<String, crate::routes::execute_service::executed_test::ExecuteStatus> {
+) -> Result<String, crate::models::executed_test::ExecuteStatus> {
     use std::io::Read;
 
     let mut out = Vec::new();

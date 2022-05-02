@@ -1,7 +1,7 @@
 use crate::executors::consts::{COMPILED_FILE_NAME, OS_PATH_PREFIX};
 use crate::executors::executor_impl::{ExecutorImpl, RunCommand};
 use crate::make_compiler;
-use crate::routes::execute_service::solution::Solution;
+use crate::models::solution::Solution;
 
 #[cfg(windows)]
 pub const COMPILER_NAME: &str = "kotlinc";

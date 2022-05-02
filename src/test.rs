@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use crate::routes::execute_service::executed_test::{ExecuteStatus, ExecutedResponse};
-    use crate::routes::execute_service::solution::SolutionBuilder;
     use crate::{execute, SecretKey};
     use actix_web::web::Data;
     use actix_web::{test, web, App};
+    use rust_code_executor_service::models::executed_test::{ExecuteStatus, ExecutedResponse};
+    use rust_code_executor_service::models::solution::SolutionBuilder;
 
     const X_API_KEY: (&str, &str) = (
         "x-api-key",
@@ -369,7 +369,7 @@ mod tests {
                     .service(execute),
             ),
         )
-            .await;
+        .await;
 
         let solution = SolutionBuilder::make_csharp()
             .add_src_from_file("tests/sum_two_numbers/csharp_sol.cs")
@@ -415,7 +415,7 @@ mod tests {
                     .service(execute),
             ),
         )
-            .await;
+        .await;
 
         let solution = SolutionBuilder::make_kotlin()
             .add_src_from_file("tests/sum_two_numbers/kotlin_sol.kt")
@@ -461,7 +461,7 @@ mod tests {
                     .service(execute),
             ),
         )
-            .await;
+        .await;
 
         let solution = SolutionBuilder::make_pascal()
             .add_src_from_file("tests/sum_two_numbers/pascal_sol.pas")

@@ -1,9 +1,9 @@
 use crate::executors::consts::{CONSOLE_ARG, CONSOLE_CALL};
 use crate::executors::executor_impl::ExecutorImpl;
 use crate::measure::ProcessInformer;
-use crate::routes::execute_service::executed_test::{ExecuteStatus, ExecutedTest};
-use crate::routes::execute_service::solution::Solution;
 use crate::utils::read_from_buffer;
+use crate::models::executed_test::{ExecuteStatus, ExecutedTest};
+use crate::models::solution::Solution;
 use std::io::{BufReader, Write};
 use std::marker::PhantomData;
 
