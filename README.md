@@ -13,8 +13,6 @@
 - Kotlin
 - JavaScript
 
----
-
 ## Load Test Tool
 
 Для добавления новых тестов см. [Добавление новых тестов](HowToAddNewTest.md)
