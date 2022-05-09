@@ -19,15 +19,15 @@ use routes::alive_service::route::alive;
 use routes::execute_service::route::execute;
 
 lazy_static::lazy_static! {
-    static ref PORT: u16 = std::env::var("RUST_SERVICE_PORT").unwrap_or("8000".to_string()).parse().unwrap_or(8000);
-    static ref HOST: String = std::env::var("RUST_SERVICE_HOST").unwrap_or("0.0.0.0".to_string());
+    static ref PORT: u16 = std::env::var("RUST_SERVICE_PORT").unwrap_or_else(|_| "8000".to_string()).parse().unwrap_or(8000);
+    static ref HOST: String = std::env::var("RUST_SERVICE_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     static ref THREAD_COUNT: std::num::NonZeroUsize = std::thread::available_parallelism().unwrap_or(std::num::NonZeroUsize::new(4).unwrap(/*Инвариант*/));
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
-    dotenv::dotenv();
+    let _ = dotenv::dotenv();
 
     let _ = HttpServer::new(move || {
         let cors = Cors::default()
