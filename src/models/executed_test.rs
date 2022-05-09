@@ -84,6 +84,28 @@ impl ExecutedResponse {
     pub fn get_raw_answers(&self) -> Vec<&str> {
         self.tests.iter().map(|test| test.stdout.as_str()).collect()
     }
+
+    /// Среднее время выполнения теста
+    pub fn get_avg_execute_time(&self) -> f64 {
+        (self
+            .tests
+            .iter()
+            .map(|e| e.time)
+            .reduce(|accum, item| accum + item)
+            .unwrap() as f64)
+            / (self.tests.len() as f64)
+    }
+
+    /// Среднее количество затрачиваемой памяти
+    pub fn get_avg_memory(&self) -> f64 {
+        (self
+            .tests
+            .iter()
+            .map(|e| e.memory)
+            .reduce(|accum, item| accum + item)
+            .unwrap() as f64)
+            / (self.tests.len() as f64)
+    }
 }
 
 impl From<ProcessInfo> for ExecutedTest {

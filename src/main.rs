@@ -18,21 +18,18 @@ use paperclip::actix::{web, OpenApiExt};
 use routes::alive_service::route::alive;
 use routes::execute_service::route::execute;
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+lazy_static::lazy_static! {
+    static ref PORT: u16 = std::env::var("RUST_SERVICE_PORT").unwrap_or("8000".to_string()).parse().unwrap_or(8000);
+    static ref HOST: String = std::env::var("RUST_SERVICE_HOST").unwrap_or("0.0.0.0".to_string());
+    static ref THREAD_COUNT: std::num::NonZeroUsize = std::thread::available_parallelism().unwrap_or(std::num::NonZeroUsize::new(4).unwrap(/*Инвариант*/));
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
+    dotenv::dotenv();
 
-    dotenv::dotenv().ok();
-
-    let port = std::env::var("RUST_SERVICE_PORT")
-        .unwrap()
-        .parse::<u16>()
-        .unwrap();
-    let host_address = std::env::var("RUST_SERVICE_HOST").unwrap();
-    let thread_count =
-        std::thread::available_parallelism().unwrap_or(std::num::NonZeroUsize::new(4).unwrap());
-
-    HttpServer::new(move || {
+    let _ = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allowed_methods(vec!["GET"])
@@ -40,9 +37,9 @@ async fn main() -> std::io::Result<()> {
 
         let pool = Data::new(
             rayon::ThreadPoolBuilder::new()
-                .num_threads(thread_count.get())
+                .num_threads(THREAD_COUNT.get())
                 .build()
-                .unwrap(),
+                .unwrap(/*Не ломается*/),
         );
 
         App::new()
@@ -60,7 +57,9 @@ async fn main() -> std::io::Result<()> {
             .with_swagger_ui_at("/swagger-ui")
             .build()
     })
-    .bind((host_address, port))?
+    .bind((HOST.clone(), *PORT))?
     .run()
-    .await
+    .await;
+
+    Ok(())
 }
