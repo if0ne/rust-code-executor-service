@@ -27,6 +27,7 @@ impl ProcessInformer for std::process::Child {
             }
         });
 
+        //TODO: Асинхронный вызов
         let work_result = receiver
             .recv_timeout(timeout)
             .map_err(|_| ExecuteStatus::Timeout);

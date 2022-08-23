@@ -1,4 +1,4 @@
-FROM rust:1.61-alpine3.15 AS chef
+FROM rust:1.63-alpine3.15 AS chef
 WORKDIR /app
 RUN apk upgrade
 RUN apk add musl-dev=1.2.2-r7
@@ -24,14 +24,14 @@ WORKDIR /usr/src/app
 
 RUN apk add rust=1.56.1-r0
 RUN apk add openjdk17=17.0.3_p7-r0
-RUN apk add python3=3.9.7-r4
-RUN apk add nodejs=16.14.2-r0
-RUN apk add zlib=1.2.12-r0
-RUN apk add --no-cache mono=6.12.0.122-r1 --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
+RUN apk add python3=3.9.13-r1
+RUN apk add nodejs=16.16.0-r0
+RUN apk add zlib=1.2.12-r3
+RUN apk add --no-cache mono=6.12.0.182-r0 --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
 RUN apk add unzip=6.0-r9
 RUN apk add wget=1.21.2-r2
 RUN apk add bash=5.1.16-r0
-RUN apk add build-base=0.5-r2
+RUN apk add build-base=0.5-r3
 #############################################################################
 #It is not possible to specify the version for the pascal compiler, or the  #
 #possibility was not found.                                                 #

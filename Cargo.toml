@@ -20,7 +20,7 @@ paperclip = { git = "https://github.com/if0ne/paperclip", features = [
     "swagger-ui",
 ] }
 rayon = "1.5.1"
-regex = "1"
+regex = "1.6.0"
 tokio = { version = "1.16.1", features = ["full"] }
 serde = "1.0.136"
 serde_json = "1.0.79"
@@ -34,6 +34,3 @@ windows = { version = "0.34.0", features = [
 
 [target.'cfg(not(windows))'.dependencies]
 libc = "0.2.117"
-
-[workspace]
-members = ["load-test-tool"]

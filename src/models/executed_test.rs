@@ -113,13 +113,9 @@ impl From<ProcessInfo> for ExecutedTest {
         // Если возвращаемое значение отличное от нуля, то ошибка произошла во время выполнения
         Self {
             time: process_info.execute_time.as_millis(),
-            memory: process_info.total_memory / 1024,
+            memory: process_info.total_memory / 1024, //Перевод в килобайты
             stdout: process_info.stdout,
-            status: if process_info.exit_status == 0 {
-                ExecuteStatus::OK
-            } else {
-                ExecuteStatus::RuntimeError
-            },
+            status: (process_info.exit_status == 0).then_some(ExecuteStatus::OK).unwrap_or(ExecuteStatus::RuntimeError),
             stderr: process_info.stderr,
         }
     }
