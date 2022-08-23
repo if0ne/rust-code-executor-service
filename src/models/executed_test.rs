@@ -3,7 +3,7 @@ use paperclip::actix::Apiv2Schema;
 use serde::{Deserialize, Serialize};
 
 /// Статус выполнения запроса
-#[derive(Debug, PartialEq, Serialize, Deserialize, Apiv2Schema)]
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize, Apiv2Schema)]
 pub enum ExecuteStatus {
     /// Всё окей
     OK,

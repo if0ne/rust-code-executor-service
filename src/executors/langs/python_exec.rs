@@ -5,7 +5,7 @@ use crate::models::solution::Solution;
 #[cfg(windows)]
 pub const INTERPRETER_NAME: &str = "python";
 #[cfg(not(windows))]
-pub const INTERPRETER_NAME: &str = "python3.9";
+pub const INTERPRETER_NAME: &str = "python3";
 
 pub struct PythonExecutor;
 
