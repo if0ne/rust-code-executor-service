@@ -7,7 +7,7 @@
 - C++
 - Java
 - Python
-- Pascal
+- Pascal.NET
 - C#
 - Rust
 - Kotlin
