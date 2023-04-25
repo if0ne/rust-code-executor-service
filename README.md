@@ -1,7 +1,7 @@
 <h1 align="center">&#9881; Code Executor Service</h1>
-<h2 align="center"><b>Сервис для удаленного запуска кода</b></h2>
+<h2 align="center"><b>Remote code executing for the testing system</b></h2>
 
-## Поддерживаемые языки
+## Supported programming languages
 
 - C
 - C++
